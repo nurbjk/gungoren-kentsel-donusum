@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T.C. Güngören Belediyesi | Yarısı Bizden Kentsel Dönüşüm Portalı</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #091e3a 0%, #0a2540 50%, #0f3460 100%);
+      color: #0f172a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .hero-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      width: 100%;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      margin-bottom: 40px;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .emblem {
+      width: 58px;
+      height: 58px;
+      background: #ffffff;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+    .brand-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+    }
+    .brand-sub {
+      font-size: 13px;
+      color: #93c5fd;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .badge-official {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid #10b981;
+      color: #34d399;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .hero-text {
+      text-align: center;
+      margin-bottom: 45px;
+    }
+    .hero-text h1 {
+      font-size: 36px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.25;
+      margin-bottom: 14px;
+      letter-spacing: -0.8px;
+    }
+    .hero-text h1 span {
+      background: linear-gradient(90deg, #38bdf8 0%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-text p {
+      font-size: 16px;
+      color: #cbd5e1;
+      max-width: 680px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .portal-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 26px;
+      margin-bottom: 40px;
+    }
+    .portal-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 32px 28px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+      border: 2px solid transparent;
+      text-decoration: none;
+      color: inherit;
+    }
+    .portal-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+      border-color: #38bdf8;
+    }
+    .card-badge {
+      display: inline-block;
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    .badge-contractor {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+    .badge-staff {
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+    .card-icon {
+      font-size: 44px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 10px;
+    }
+    .card-desc {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.55;
+      margin-bottom: 24px;
+    }
+    .features-list {
+      list-style: none;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: #334155;
+    }
+    .features-list li {
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+    .features-list li span {
+      color: #10b981;
+    }
+    .btn-portal {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 800;
+      text-align: center;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-contractor {
+      background: #1e40af;
+      color: #ffffff;
+    }
+    .btn-contractor:hover {
+      background: #1d4ed8;
+    }
+    .btn-staff {
+      background: #065f46;
+      color: #ffffff;
+    }
+    .btn-staff:hover {
+      background: #047857;
+    }
+    footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 24px 20px;
+      text-align: center;
+      font-size: 13px;
+      color: #94a3b8;
+      background: rgba(10, 25, 47, 0.6);
+    }
+    footer a {
+      color: #38bdf8;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero-container">
+    <div class="header-bar">
+      <div class="brand-group">
+        <div class="emblem">🏛️</div>
+        <div>
+          <div class="brand-title">T.C. GÜNGÖREN BELEDİYESİ</div>
+          <div class="brand-sub">Kentsel Dönüşüm Müdürlüğü &bull; Bilgi İşlem Dairesi</div>
+        </div>
+      </div>
+      <div class="badge-official">
+        ⚡ Canlı Kurumsal Portal
+      </div>
+    </div>
+
+    <div class="hero-text">
+      <h1>"Yarısı Bizden" <span>Kentsel Dönüşüm Portalı</span></h1>
+      <p>
+        Güngören genelinde riskli yapıların dönüşümü, 1.5 kat kural analizi, şematik bina kesiti çizimi 
+        ve resmi evrakların tek tıkla dijitalleştirilmesini sağlayan resmi başvuru ve takip platformu.
+      </p>
+    </div>
+
+    <div class="portal-cards-grid">
+      <!-- MÜTEAHHİT PORTALI -->
+      <a href="yarisi-bizden.html" class="portal-card">
+        <div>
+          <span class="card-badge badge-contractor">Müteahhit Firmalar İçin</span>
+          <div class="card-icon">🏗️</div>
+          <h2 class="card-title">Başvuru & Evrak Portalı</h2>
+          <p class="card-desc">
+            Müteahhit firma girişi yapın, ada/parsel tanımlayın, 1.5 kat kuralını hesaplayın, hak sahiplerini ekleyin ve evrakları birleştirin.
+          </p>
+          <ul class="features-list">
+            <li><span>✓</span> Yeni Firma Hesabı Oluşturma & Giriş</li>
+            <li><span>✓</span> 1.5 Kat Net Alan Algoritması</li>
+            <li><span>✓</span> Şematik 3D Bina Kesiti Çizimi</li>
+            <li><span>✓</span> 5 Resmi Evrakı Tek PDF Olarak Birleştirme</li>
+          </ul>
+        </div>
+        <div class="btn-portal btn-contractor">
+          Müteahhit Portalına Giriş Yap ➔
+        </div>
+      </a>
+
+      <!-- BELEDİYE YETKİLİ MASASI -->
+      <a href="yetkili.html" class="portal-card">
+        <div>
+          <span class="card-badge badge-staff">Belediye Personeli İçin</span>
+          <div class="card-icon">📋</div>
+          <h2 class="card-title">Yetkili İnceleme Masası</h2>
+          <p class="card-desc">
+            Gelen kentsel dönüşüm başvurularını inceleyin, evrakları kontrol edin, revizyon notu iletin ve ARAAD sistemine tek tıkla aktarın.
+          </p>
+          <ul class="features-list">
+            <li><span>✓</span> Gelen Başvuru Havuzu & Canlı Arama</li>
+            <li><span>✓</span> Dosya İnceleme & Revizyon Yönetimi</li>
+            <li><span>✓</span> Bakanlık ARAAD Panoya Hızlı Kopyalama</li>
+            <li><span>✓</span> Salı/Perşembe İmza Masası Takvimi</li>
+          </ul>
+        </div>
+        <div class="btn-portal btn-staff">
+          Yetkili Masasına Giriş Yap ➔
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <footer>
+    <p>
+      T.C. Güngören Belediyesi Kentsel Dönüşüm Başvuru ve Dosya Takip Portalı &bull; 
+      Yazılım Mühendisliği Staj Projesi &bull; Geliştiren: <strong>Hatice Nur Okumuş</strong>
+    </p>
+  </footer>
+
+</body>
+</html>
+

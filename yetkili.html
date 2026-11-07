@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Güngören Belediyesi | Kentsel Dönüşüm Yetkili & Dosya İnceleme Masası</title>
+  <link rel="icon" type="image/png" href="gungoren-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="yarisi-bizden.css">
+  <!-- Tarayıcıda Otomatik PDF Kütüphanesi - Yerel ve Hızlı -->
+  <script src="pdf-lib.min.js"></script>
+  <script>
+    if (typeof PDFLib === "undefined" && typeof pdfLib === "undefined") {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"><\/script>');
+    }
+  </script>
+  <!-- Tarayıcıda Resmi Excel (.xlsx, .xls, .csv) Okuyucu (SheetJS) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    if (typeof XLSX === "undefined") {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>');
+    }
+  </script>
+  <style>
+    .staff-login-card {
+      max-width: 460px;
+      margin: 60px auto;
+      padding: 32px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+      border: 1px solid #e2e8f0;
+      text-align: center;
+    }
+    .staff-badge-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, #0f3460 0%, #1e40af 100%);
+      color: #fff;
+      font-size: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(15, 52, 96, 0.25);
+    }
+    .staff-logout-btn {
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .staff-logout-btn:hover {
+      background: #dc2626;
+      color: #ffffff;
+    }
+    .qf-btn {
+      transition: all 0.2s ease;
+    }
+    .qf-btn.active {
+      background: #0f3460 !important;
+      color: #ffffff !important;
+      border-color: #0f3460 !important;
+      box-shadow: 0 2px 6px rgba(15, 52, 96, 0.25);
+    }
+    .qf-btn:not(.active):hover {
+      background: #f1f5f9;
+    }
+    .app-card {
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .app-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ÜST HEADER / BELEDİYE YETKİLİ PANELİ -->
+  <header class="yb-header">
+    <div class="yb-header-container">
+      <div class="yb-brand">
+        <img src="gungoren-logo.png" alt="T.C. Güngören Belediyesi"
+          style="height: 48px; background: #ffffff; padding: 3px 8px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.18);">
+        <div>
+          <div class="yb-brand-title">T.C. GÜNGÖREN BELEDİYESİ</div>
+          <div class="yb-brand-sub">Kentsel Dönüşüm Müdürlüğü &bull; Yarısı Bizden Yetkili &amp; Dosya İnceleme Masası</div>
+        </div>
+      </div>
+
+      <!-- Sağ Taraf Yetkili Bilgisi / Çıkış Butonu -->
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <a href="yarisi-bizden.html" class="btn-action-sm" style="background: rgba(255,255,255,0.15); color: #ffffff; border: 1px solid rgba(255,255,255,0.28); font-weight: 700; text-decoration: none; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+          🏗️ Müteahhit Portalı &rarr;
+        </a>
+        <div id="staff-header-auth-info" style="display: none; align-items: center; gap: 14px;">
+          <button type="button" class="btn-action-sm" style="background: rgba(255,255,255,0.15); color: #ffffff; border: 1px solid rgba(255,255,255,0.25); font-weight: 700; padding: 6px 12px; border-radius: 8px; cursor: pointer;" onclick="openRequiredDocumentsGuideModal()">
+            📋 İstenen Evraklar & Noter Şartı
+          </button>
+          <button type="button" class="btn-action-sm" style="background: rgba(255,255,255,0.15); color: #ffffff; border: 1px solid rgba(255,255,255,0.25); font-weight: 700; padding: 6px 12px; border-radius: 8px; cursor: pointer;" onclick="openStaffChangePasswordModal()">
+            🔑 Şifremi Değiştir
+          </button>
+          <div style="text-align: right;">
+            <div id="top-staff-name" style="font-size: 13.5px; font-weight: 700; color: #ffffff;">Hatice Nur Okumuş</div>
+            <div id="top-staff-role" style="font-size: 11px; color: #93c5fd;">Sistem Yöneticisi</div>
+          </div>
+          <button type="button" class="staff-logout-btn" onclick="handleStaffLogout()">
+            🚪 Çıkış
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- BİLDİRİM TOAST ALANI -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <main class="yb-main">
+
+    <!-- ============================================== -->
+    <!-- 1. ADIM: BELEDİYE YETKİLİ GİRİŞ EKRANI          -->
+    <!-- ============================================== -->
+    <div id="staff-login-section" class="staff-login-card" style="max-width: 460px; margin: 40px auto; padding: 32px; border-radius: 16px; box-shadow: 0 10px 30px rgba(15,23,42,0.12);">
+      <img src="gungoren-logo.png" alt="Güngören Belediyesi" style="height: 68px; object-fit: contain; margin-bottom: 14px;">
+      <h2 style="font-size: 21px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">Yetkili Personel Girişi</h2>
+      <p style="font-size: 13px; color: #64748b; margin-bottom: 24px;">
+        Güngören Belediyesi Kentsel Dönüşüm Müdürlüğü Yetkili &amp; Dosya İnceleme Masası
+      </p>
+
+      <form id="form-staff-login" onsubmit="event.preventDefault(); handleStaffLoginSubmit(event); return false;" style="text-align: left;">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="select-staff-user" style="font-weight: 700; font-size: 13px;">Giriş Yapacak Personel Hesabı *</label>
+          <select id="select-staff-user" class="form-control" required style="font-weight: 600; height: 42px;">
+            <!-- JS ile dinamik personeller doldurulur -->
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 22px;">
+          <label for="staff-login-password" style="font-weight: 700; font-size: 13px;">Personel Giriş Şifresi *</label>
+          <input type="password" id="staff-login-password" class="form-control" placeholder="••••••••" required style="height: 42px;">
+        </div>
+
+        <button type="submit" class="btn-submit-big" style="width: 100%; justify-content: center; padding: 13px; font-size: 14px;">
+          🔐 Masaya Giriş Yap
+        </button>
+      </form>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- 2. ADIM: BELEDİYE YETKİLİ ÇALIŞMA MASASI        -->
+    <!-- ============================================== -->
+    <div id="staff-dashboard-section" style="display: none;">
+
+      <!-- Personel Oturum Çubuğu (Değiş-tokuş kaldırıldı, sadece aktif profil gösterilir) -->
+      <div class="staff-header-panel">
+        <div class="staff-active-profile">
+          <div class="staff-avatar" id="active-staff-avatar">HN</div>
+          <div>
+            <div style="font-size:11px; text-transform:uppercase; color:#94a3b8; font-weight:700;">Aktif Yetkili Masası:</div>
+            <div class="staff-name" id="active-staff-name">Hatice Nur Okumuş (Sistem Yöneticisi)</div>
+          </div>
+        </div>
+        <div style="font-size:12px; color:#cbd5e1; font-weight:600; display:flex; align-items:center; gap:8px;">
+          <span>🔒 Güvenli Personel Oturumu</span>
+        </div>
+      </div>
+
+      <!-- PERSONEL SUB-NAV: GELEN DOSYALAR vs KAYITLI MÜTEAHHİTLER vs SİSTEM YÖNETİMİ -->
+      <div class="merger-tab-bar" style="margin-bottom: 20px;">
+        <button type="button" class="merger-tab-btn active" id="btn-staff-subtab-pool"
+          onclick="switchStaffSubTab('pool')">
+          📥 Gelen Başvurular <span class="badge-count" id="subtab-pool-count">0</span>
+        </button>
+        <button type="button" class="merger-tab-btn" id="btn-staff-subtab-contractors"
+          onclick="switchStaffSubTab('contractors')">
+          👥 Kayıtlı Müteahhit Firmalar & Hesaplar <span class="badge-count" id="subtab-contractors-count">0</span>
+        </button>
+        <button type="button" class="merger-tab-btn" id="btn-staff-subtab-admin" style="display:none; background:#fef2f2; color:#b91c1c; border-color:#fca5a5;"
+          onclick="switchStaffSubTab('admin')">
+          ⚙️ Sistem &amp; Personel Yönetimi (Yönetici) <span class="badge-count" style="background:#b91c1c; color:#fff;" id="subtab-admin-count">Yönetici</span>
+        </button>
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- SEKME 1: GELEN BAŞVURULAR HAVUZU & DETAY İNCELEME    -->
+      <!-- ==================================================== -->
+      <div id="staff-section-pool">
+
+        <!-- GELEN BAŞVURULAR HAVUZU -->
+        <section class="simple-card" id="staff-pool-overview-card">
+          <div class="card-title-bar">
+            <div>
+              <h3>📥 Gelen Başvurular</h3>
+              <p style="font-size:13px; color:#64748b;">Müteahhit firmalar tarafından iletilen tüm kentsel dönüşüm başvuru dosyaları burada listelenir.</p>
+            </div>
+            <div class="pool-stats-badge" id="pool-badge-text">0 Dosya Bekliyor</div>
+          </div>
+
+          <!-- GELEN BAŞVURULAR CANLI ARAMA & FİLTRELEME PANELİ -->
+          <div class="staff-search-filter-panel" style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
+              <!-- Arama Girişi (Ada/Parsel, Dosya No, Mahalle, Firma, Malik) -->
+              <div style="position:relative; flex:1; min-width:280px;">
+                <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:17px; color:#64748b; pointer-events:none;">🔍</span>
+                <input type="text" id="staff-search-input" class="form-control"
+                  placeholder="Ada/Parsel (örn: 1965 veya 1452/8), Dosya No, Mahalle, Firma veya Malik Ara..."
+                  oninput="handleStaffSearchFilter(this.value)"
+                  style="padding-left:42px; padding-right:38px; height:44px; font-size:13.5px; border-radius:8px; border:1.5px solid #cbd5e1; width:100%; box-sizing:border-box;">
+                <button type="button" id="staff-search-clear-btn" onclick="clearStaffSearch()"
+                  style="display:none; position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer; padding:4px 8px;" title="Aramayı Temizle">✖</button>
+              </div>
+
+              <!-- Durum Filtresi -->
+              <div style="min-width:180px;">
+                <select id="staff-status-filter" class="form-control" onchange="handleStaffSearchFilter()"
+                  style="height:44px; font-weight:700; font-size:13px; border-radius:8px; border:1.5px solid #cbd5e1; cursor:pointer;">
+                  <option value="all">📁 Tüm Durumlar</option>
+                  <option value="havuzda">📥 Havuzda Bekleyen</option>
+                  <option value="inceleniyor">🔍 Personel İnceliyor</option>
+                  <option value="revize_edildi">🔄 Revize Edildi (Yeni Gönderim)</option>
+                  <option value="revizyon">⚠️ Revizyon Talebi Var</option>
+                  <option value="onaylandi">✅ Onaylandı / ARAAD'a Gönderildi</option>
+                </select>
+              </div>
+
+              <!-- Masa / Zimmet Filtresi -->
+              <div style="min-width:170px;">
+                <select id="staff-desk-filter" class="form-control" onchange="handleStaffSearchFilter()"
+                  style="height:44px; font-weight:600; font-size:13px; border-radius:8px; border:1.5px solid #cbd5e1; cursor:pointer;">
+                  <option value="all">👥 Tüm Başvurular</option>
+                  <option value="my_desk">💼 Üzerimdeki Dosyalar</option>
+                  <option value="unclaimed">📥 Atama Bekleyenler</option>
+                </select>
+              </div>
+
+              <!-- Görünüm Seçici (Kart vs Tablo) -->
+              <div style="display:flex; border:1.5px solid #cbd5e1; border-radius:8px; overflow:hidden; background:#fff; height:44px; box-sizing:border-box;">
+                <button type="button" id="btn-view-cards" onclick="setPoolViewMode('cards')"
+                  style="border:none; padding:0 14px; background:#0f3460; color:#fff; font-weight:700; cursor:pointer; font-size:12.5px; display:inline-flex; align-items:center; gap:5px;" title="Kart Görünümü">
+                  🎴 Kart
+                </button>
+                <button type="button" id="btn-view-table" onclick="setPoolViewMode('table')"
+                  style="border:none; padding:0 14px; background:#fff; color:#475569; font-weight:600; cursor:pointer; font-size:12.5px; display:inline-flex; align-items:center; gap:5px;" title="Tablo Liste Görünümü">
+                  📋 Tablo
+                </button>
+              </div>
+            </div>
+
+            <!-- Hızlı Durum Etiketleri ve Sonuç Sayaç Göstergesi -->
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+              <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                <span style="font-size:11.5px; color:#64748b; font-weight:700;">Hızlı Filtre:</span>
+                <button type="button" class="btn-action-sm qf-btn active" data-status="all" onclick="applyQuickStatusFilter('all')" style="font-size:11.5px; padding:3px 10px; border-radius:20px; font-weight:700; background:#0f3460; color:#fff; border:none; cursor:pointer;">Tümü (<span id="qf-count-all">0</span>)</button>
+                <button type="button" class="btn-action-sm qf-btn" data-status="havuzda" onclick="applyQuickStatusFilter('havuzda')" style="font-size:11.5px; padding:3px 10px; border-radius:20px; font-weight:600; background:#fff; color:#1e40af; border:1px solid #bfdbfe; cursor:pointer;">📥 Havuzda (<span id="qf-count-havuzda">0</span>)</button>
+                <button type="button" class="btn-action-sm qf-btn" data-status="revize_edildi" onclick="applyQuickStatusFilter('revize_edildi')" style="font-size:11.5px; padding:3px 10px; border-radius:20px; font-weight:600; background:#fff; color:#92400e; border:1px solid #fde68a; cursor:pointer;">🔄 Revize Edildi (<span id="qf-count-revize">0</span>)</button>
+                <button type="button" class="btn-action-sm qf-btn" data-status="inceleniyor" onclick="applyQuickStatusFilter('inceleniyor')" style="font-size:11.5px; padding:3px 10px; border-radius:20px; font-weight:600; background:#fff; color:#0369a1; border:1px solid #bae6fd; cursor:pointer;">🔍 İnceleniyor (<span id="qf-count-inceleniyor">0</span>)</button>
+                <button type="button" class="btn-action-sm qf-btn" data-status="revizyon" onclick="applyQuickStatusFilter('revizyon')" style="font-size:11.5px; padding:3px 10px; border-radius:20px; font-weight:600; background:#fff; color:#b91c1c; border:1px solid #fecaca; cursor:pointer;">⚠️ Revizyonda (<span id="qf-count-revizyon">0</span>)</button>
+                <button type="button" class="btn-action-sm qf-btn" data-status="onaylandi" onclick="applyQuickStatusFilter('onaylandi')" style="font-size:11.5px; padding:3px 10px; border-radius:20px; font-weight:600; background:#fff; color:#15803d; border:1px solid #bbf7d0; cursor:pointer;">✅ Onaylı (<span id="qf-count-onaylandi">0</span>)</button>
+              </div>
+              <div id="staff-search-results-info" style="font-size:12px; color:#0f3460; font-weight:700;">
+                Toplam 0 dosya listeleniyor
+              </div>
+            </div>
+          </div>
+
+          <!-- Dosya Kartları Listesi (Varsayılan Görünüm) -->
+          <div class="application-pool-grid" id="pool-list-container">
+            <!-- JS ile doldurulur -->
+          </div>
+
+          <!-- Dosya Tablo Listesi (Alternatif Görünüm) -->
+          <div id="pool-table-view-container" style="display:none; margin-top:14px; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;" class="table-responsive">
+            <table class="yb-table" style="margin:0;">
+              <thead>
+                <tr>
+                  <th width="140">Dosya No</th>
+                  <th>Ada / Parsel &amp; Mahalle</th>
+                  <th>Müteahhit Firma</th>
+                  <th width="105" class="text-center">Malik / BB</th>
+                  <th width="140" class="text-center">Evrak Durumu</th>
+                  <th width="165" class="text-center">Dosya Durumu</th>
+                  <th width="160">İnceleyen Personel</th>
+                  <th width="170" class="text-center">İşlemler</th>
+                </tr>
+              </thead>
+              <tbody id="pool-table-tbody">
+                <!-- JS ile doldurulur -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- SEÇİLEN DOSYA İNCELEME & ARAAD MASASI (BİR DOSYAYA TIKLANDIĞINDA AÇILIR) -->
+        <section id="selected-application-detail" class="simple-card" style="display: none;">
+          <div class="card-title-bar"
+            style="background:#f8fafc; margin:-24px -24px 20px -24px; padding:16px 24px; border-bottom:1.5px solid #e2e8f0;">
+            <div>
+              <span class="badge-status-pill" id="detail-status-pill">İnceleniyor</span>
+              <h3 id="detail-building-title" style="margin-top:4px;">Haznedar Mah. 1452/8 (Dosya Detayı)</h3>
+              <p id="detail-company-sub" style="font-size:12.5px; color:#64748b;">Müteahhit: Güngören İnşaat Ltd. Şti.</p>
+            </div>
+            <div class="header-action-group">
+              <button class="btn-action-sm btn-outline-secondary"
+                style="background:#f1f5f9; color:#0f172a; border-color:#cbd5e1; font-weight:800;"
+                onclick="closeDetailView()">
+                ← Dosya Havuzuna Dön
+              </button>
+              <button class="btn-action-sm btn-outline-primary"
+                style="background:#f0f9ff; color:#0369a1; border-color:#7dd3fc; font-weight:700;"
+                onclick="openStaffSchematicModal()">
+                🏢 Eski Bina Kat Kesiti (Kılavuz S.5)
+              </button>
+              <button class="btn-action-sm btn-outline-warning"
+                style="background:#fffbeb; color:#b45309; border-color:#fcd34d; font-weight:700;"
+                onclick="openRevisionChatModal()">
+                💬 Revizyon / Mesaj Gönder
+              </button>
+              <button class="btn-action-sm btn-outline-info" onclick="exportOfficialExcel()">
+                📊 Resmi Excel İndir (Hisseler Korumalı)
+              </button>
+              <button class="btn-action-sm btn-outline-success" onclick="printOfficialEK1Modal()">
+                🖨️ Resmi EK-1 Dilekçeleri Yazdır
+              </button>
+              <button class="btn-action-sm"
+                style="background:#ecfdf5; color:#065f46; border:1.5px solid #a7f3d0; font-weight:700;"
+                onclick="openAllBuildingDocsModal()">
+                📁 Birleştirilen Evraklar
+              </button>
+              <button class="btn-action-sm"
+                style="background:#fee2e2; color:#b91c1c; border:1.5px solid #fca5a5; font-weight:800;"
+                onclick="deleteCurrentApplication()" title="Bu başvuru dosyasını sistemden kalıcı olarak sil">
+                🗑️ Dosyayı Sil
+              </button>
+            </div>
+          </div>
+
+          <!-- Revize Edilen Dosya Bildirim Panosu -->
+          <div id="detail-revision-alert-banner" style="display:none; margin-bottom:18px;"></div>
+          <div class="detail-summary-grid">
+            <div class="summary-box">
+              <span class="sb-label">Şirket IBAN (Emlak Katılım):</span>
+              <span class="sb-val font-mono" id="det-iban">-</span>
+            </div>
+            <div class="summary-box">
+              <span class="sb-label">Şirket Yetkilisi & Tel:</span>
+              <span class="sb-val" id="det-rep">-</span>
+            </div>
+            <div class="summary-box">
+              <span class="sb-label">Yetkili Doğum T. & E-posta:</span>
+              <span class="sb-val" id="det-rep-extra">-</span>
+            </div>
+            <div class="summary-box">
+              <span class="sb-label">1.5 Kat Kuralı Durumu:</span>
+              <span class="sb-val" id="det-15-status">Hesaplanıyor</span>
+            </div>
+          </div>
+
+          <!-- Müteahhidin Yüklediği Birleştirilmiş Evraklar Durum Panosu -->
+          <div id="detail-contractor-docs-status-box" style="margin-top:16px;"></div>
+
+          <!-- Bina Geneli Toplu Sözleşmeler ve Toplu Vekaletnameler Panosu -->
+          <div id="detail-building-contracts-proxies-box" style="margin-top:14px;"></div>
+
+          <!-- Salı / Perşembe Belediye İmza Masası Randevuları Takvim Panosu -->
+          <div id="detail-appointment-schedule-box" style="margin-top:14px;"></div>
+
+          <!-- ARAAD Tek Tıkla Kopyalama İstasyonu -->
+          <div style="margin-top:20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+              <h4 style="font-size:15px; font-weight:700;">📋 Hak Sahipleri Listesi & ARAAD Kopyalama Panosu</h4>
+              <button class="btn-copy-chip" onclick="copyFullAraadSummary()">Tüm Binayı Panoya Kopyala</button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="yb-table">
+                <thead>
+                  <tr>
+                    <th>Eski BB No</th>
+                    <th>Kat / Nitelik</th>
+                    <th>T.C. Kimlik</th>
+                    <th>Doğum Tarihi</th>
+                    <th>Malik Ad Soyad</th>
+                    <th>Telefon</th>
+                    <th>Hisse</th>
+                    <th class="text-center">Vekalet / İmza Durumu</th>
+                    <th class="text-center">ARAAD Kopyala</th>
+                    <th class="text-center">EK-1 Dilekçe</th>
+                    <th class="text-center">Evrak Dosyası (X.B.B.pdf)</th>
+                  </tr>
+                </thead>
+                <tbody id="detail-owners-table-body">
+                  <!-- JS ile dolar -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Dosya Onaylama Butonları -->
+          <div class="detail-footer-actions" id="detail-footer-actions-container">
+            <button class="yb-btn yb-btn-outline" onclick="markApplicationStatus('revizyon')">
+              ⚠️ Müteahhitten Eksik Evrak / Revizyon İste
+            </button>
+            <button class="yb-btn yb-btn-primary" onclick="markApplicationStatus('onaylandi')">
+              ✔ Dosyayı Onayla ve ARAAD'a Gönderildi İşaretle
+            </button>
+          </div>
+        </section>
+
+      </div> <!-- end #staff-section-pool -->
+
+      <!-- ==================================================== -->
+      <!-- SEKME 2: KAYITLI MÜTEAHHİT FİRMALAR LİSTESİ           -->
+      <!-- ==================================================== -->
+      <div id="staff-section-contractors" style="display: none;">
+        <section class="simple-card">
+          <div class="card-title-bar">
+            <div>
+              <h3>👥 Sisteme Kayıtlı Müteahhit Firmalar (Kullanıcı Hesapları)</h3>
+              <p style="font-size:13px; color:#64748b;">
+                Sisteme üye olan firmaları, yetkili adlarını, e-posta adreslerini ve gönderdikleri dosyaları buradan
+                takip edebilirsiniz.
+              </p>
+            </div>
+            <div class="pool-stats-badge" id="contractors-stats-badge">1 Firma Kayıtlı</div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="yb-table" id="registered-contractors-table">
+              <thead>
+                <tr>
+                  <th>Şirket / Firma Ünvanı</th>
+                  <th>Yetkili Adı Soyadı</th>
+                  <th>E-Posta Adresi (Giriş)</th>
+                  <th>Telefon</th>
+                  <th>Kayıt Tarihi</th>
+                  <th class="text-center">Dosyaları</th>
+                  <th class="text-center">Durum</th>
+                </tr>
+              </thead>
+              <tbody id="registered-contractors-tbody">
+                <!-- JS ile basılır -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==================================================== -->
+      <!-- SEKME 3: SİSTEM YÖNETİCİSİ MASASI (PERSONEL & FİRMA SİLME/EKLEME) -->
+      <!-- ==================================================== -->
+      <div id="staff-section-admin" style="display: none;">
+        
+        <!-- KART 1: PERSONEL YÖNETİMİ -->
+        <section class="simple-card" style="margin-bottom: 22px;">
+          <div class="card-title-bar" style="border-bottom: 1.5px solid #fee2e2; padding-bottom: 14px;">
+            <div>
+              <h3 style="color:#991b1b; display:flex; align-items:center; gap:8px;">
+                <span>👥 İnceleme Personeli Yönetimi</span>
+                <span class="badge-status-pill" style="background:#fee2e2; color:#b91c1c;">Yönetici Yetkisi</span>
+              </h3>
+              <p style="font-size:13px; color:#64748b;">
+                Sisteme yeni inceleme personeli ekleyebilir, ayrılan personelleri silebilir veya şifrelerini sıfırlayabilirsiniz.
+              </p>
+            </div>
+            <button type="button" class="btn-action-sm btn-primary-sm" onclick="openAddStaffModal()" style="font-weight:700;">
+              ➕ Yeni Personel Tanımla
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="yb-table">
+              <thead>
+                <tr>
+                  <th width="60">Profil</th>
+                  <th>Personel Adı Soyadı</th>
+                  <th>Görevi / Yetkisi</th>
+                  <th>Kullanıcı ID / Kod</th>
+                  <th class="text-center">Şifre Durumu</th>
+                  <th class="text-center">İşlemler</th>
+                </tr>
+              </thead>
+              <tbody id="admin-staff-table-body">
+                <!-- JS ile basılır -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- KART 2: SİSTEMDEN MÜTEAHHİT & DOSYA SİLME / TEMİZLEME YÖNETİMİ -->
+        <section class="simple-card">
+          <div class="card-title-bar" style="border-bottom: 1.5px solid #fee2e2; padding-bottom: 14px;">
+            <div>
+              <h3 style="color:#991b1b; display:flex; align-items:center; gap:8px;">
+                <span>🗑️ Sistem Temizleme &amp; Firma/Dosya Silme Yetkisi</span>
+              </h3>
+              <p style="font-size:13px; color:#64748b;">
+                Hatalı açılan firma hesaplarını veya yanlış/mükerrer gönderilen başvuru dosyalarını sistemden kalıcı olarak silebilirsiniz.
+              </p>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:18px; margin-top:10px;">
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px;">
+              <h4 style="font-size:14px; font-weight:800; color:#0f172a; margin-bottom:8px;">🏢 Kayıtlı Müteahhit Firmaları</h4>
+              <p style="font-size:12px; color:#64748b; margin-bottom:12px;">Firmalar listesindeki silme butonuyla hesabı ve tüm dosyalarını anında kaldırabilirsiniz.</p>
+              <div id="admin-contractors-quick-list" style="display:flex; flex-direction:column; gap:8px;">
+                <!-- JS ile basılır -->
+              </div>
+            </div>
+
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px;">
+              <h4 style="font-size:14px; font-weight:800; color:#0f172a; margin-bottom:8px;">📑 Başvuru Havuzundaki Dosyalar</h4>
+              <p style="font-size:12px; color:#64748b; margin-bottom:12px;">Yanlış gönderilmiş dosyaları tek tıkla havuzdan silebilirsiniz.</p>
+              <div id="admin-applications-quick-list" style="display:flex; flex-direction:column; gap:8px;">
+                <!-- JS ile basılır -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+  </main>
+
+  <!-- ========================================================
+       MODAL 1: RESMİ EK-1 DİLEKÇE ŞABLONU (BİREBİR RESMİ FORMAT)
+       ======================================================== -->
+  <div id="print-ek1-modal" class="print-modal" style="display:none;">
+    <div class="print-content" id="print-ek1-area">
+      <div id="ek1-dynamic-body"></div>
+
+      <div class="print-no-print-bar">
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="yb-btn yb-btn-secondary" style="background:#334155; color:#fff;"
+            onclick="printOfficialEK1Modal(true)">
+            📄 Boş Resmi Şablon (Noktalı Orijinal)
+          </button>
+          <button type="button" class="yb-btn yb-btn-secondary" style="background:#1e40af; color:#fff;"
+            onclick="printOfficialEK1Modal(false)">
+            📝 Doldurulmuş Olarak Göster
+          </button>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="yb-btn yb-btn-primary" onclick="window.print()">🖨️ Sayfayı Yazdır (PDF Olarak Kaydet)</button>
+          <button class="yb-btn yb-btn-outline" onclick="closeEK1Modal()">Kapat</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL 2: BAĞIMSIZ BÖLÜM EVRAKLARI İNCELEME & İNDİRME MASASI
+       (Yetkili dosya yüklemez; müteahhidin yüklediği evrakları inceler, indirir ve kontrol eder)
+       ======================================================== -->
+  <div id="pdf-merger-modal" class="print-modal" style="display:none;">
+    <div class="print-content" style="max-width: 780px; padding: 26px;">
+
+      <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1.5px solid #e2e8f0; padding-bottom:14px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="font-size:32px;">📑</div>
+          <div>
+            <h3 style="font-size:18px; font-weight:800; color:#0f172a; margin:0; display:flex; align-items:center; gap:8px;">
+              <span>Bağımsız Bölüm Evrak & Dosya İnceleme</span>
+              <span id="merger-modal-unit-badge" class="badge-status-pill" style="background:#e0e7ff; color:#3730a3; font-size:12px;">1.B.B.pdf</span>
+            </h3>
+            <p style="font-size:12.5px; color:#64748b; margin-top:2px;" id="merger-modal-sub">
+              Müteahhidin yüklediği bağımsız bölüm evraklarını tek tek inceleyin, indirin ve uygunluğunu onaylayın.
+            </p>
+          </div>
+        </div>
+        <button class="btn-copy-chip" onclick="closeMergerModal()" style="font-size:16px; padding:4px 10px;">✖</button>
+      </div>
+
+      <!-- MALİK & BAĞIMSIZ BÖLÜM KİMLİK KARTI -->
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 18px; margin-bottom:18px; display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; font-size:12.5px;">
+        <div>
+          <span style="color:#64748b; display:block; font-size:11px; text-transform:uppercase; font-weight:700;">Hak Sahibi Malik:</span>
+          <strong id="rev-owner-name" style="color:#0f172a; font-size:13.5px;">-</strong>
+        </div>
+        <div>
+          <span style="color:#64748b; display:block; font-size:11px; text-transform:uppercase; font-weight:700;">T.C. Kimlik / Tel:</span>
+          <span id="rev-owner-tc-phone" class="font-mono" style="font-weight:600;">-</span>
+        </div>
+        <div>
+          <span style="color:#64748b; display:block; font-size:11px; text-transform:uppercase; font-weight:700;">Kat / Nitelik / Hisse:</span>
+          <span id="rev-owner-unit-share" style="font-weight:600; color:#1e40af;">-</span>
+        </div>
+        <div>
+          <span style="color:#64748b; display:block; font-size:11px; text-transform:uppercase; font-weight:700;">Vekalet / İmza Şartı:</span>
+          <span id="rev-owner-proxy-status" class="badge-status-pill" style="background:#f1f5f9; color:#334155;">-</span>
+        </div>
+      </div>
+
+      <!-- RESMİ EVRAK KONTROL LİSTESİ (KILAVUZ SIRASI 1-5) -->
+      <div style="margin-bottom:18px;">
+        <h4 style="font-size:13.5px; font-weight:800; color:#0f2b46; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;">
+          <span>📌 Yüklenen Resmi Evraklar (Resmi Sıraya Göre):</span>
+          <span style="font-size:11.5px; font-weight:600; color:#64748b;">Kılavuz Sayfa 2 Standartı</span>
+        </h4>
+
+        <div style="display:flex; flex-direction:column; gap:10px;" id="rev-documents-checklist">
+          <!-- 1. DİLEKÇE -->
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#fff; border:1px solid #e2e8f0; border-radius:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#0284c7; color:#fff; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">1</span>
+              <div>
+                <strong style="font-size:13px; color:#0f172a;">İmzalı EK-1 Malik Dilekçesi</strong>
+                <span style="font-size:11px; color:#64748b; display:block;">Islak imzalı taranmış dilekçe veya resmi hazır EK-1</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn-action-sm btn-outline-primary" onclick="printActiveOwnerEK1()">
+                👁️ Dilekçeyi İncele / Yazdır
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. ESKİ TAPU -->
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#fff; border:1px solid #e2e8f0; border-radius:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#0284c7; color:#fff; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">2</span>
+              <div>
+                <strong style="font-size:13px; color:#0f172a;">Eski Binaya Ait Tapu</strong>
+                <span style="font-size:11px; color:#64748b; display:block;">Yıkılan binadaki arsa veya eski kat irtifak tapusu</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn-action-sm btn-outline-info" onclick="openOfficialDocViewer('Eski Tapu')">
+                👁️ Tapuyu İncele
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. YENİ TAPU -->
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#fff; border:1px solid #e2e8f0; border-radius:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#0284c7; color:#fff; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">3</span>
+              <div>
+                <strong style="font-size:13px; color:#0f172a;">Yeni Binanın Kat İrtifaklı Tapusu</strong>
+                <span style="font-size:11px; color:#64748b; display:block;">Yeni kurulan kat irtifak tapusu (1 yılı geçmemiş olmalı)</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn-action-sm btn-outline-info" onclick="openOfficialDocViewer('Yeni Tapu')">
+                👁️ Tapuyu İncele
+              </button>
+            </div>
+          </div>
+
+          <!-- 4. KİMLİK FOTOKOPİSİ -->
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#fff; border:1px solid #e2e8f0; border-radius:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#0284c7; color:#fff; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">4</span>
+              <div>
+                <strong style="font-size:13px; color:#0f172a;">Malik Nüfus Cüzdanı Fotokopisi</strong>
+                <span style="font-size:11px; color:#64748b; display:block;">Önlü arkalı T.C. Kimlik kartı</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn-action-sm btn-outline-info" onclick="openOfficialDocViewer('Kimlik Fotokopisi')">
+                👁️ Kimliği İncele
+              </button>
+            </div>
+          </div>
+
+          <!-- 5. EMLAK BEYANI -->
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#fff; border:1px solid #e2e8f0; border-radius:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#0284c7; color:#fff; width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">5</span>
+              <div>
+                <strong style="font-size:13px; color:#0f172a;">Emlak Beyanı</strong>
+                <span style="font-size:11px; color:#64748b; display:block;" id="rev-emlak-note">Eski tapu kat irtifaklı ise emlak beyanından muaftır</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn-action-sm btn-outline-secondary" onclick="openOfficialDocViewer('Emlak Beyanı')">
+                👁️ Beyanı İncele
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BİRLEŞTİRİLMİŞ TEK PDF VE İNCELEME KARARI BUTONLARI -->
+      <div id="rev-merged-summary-box" style="background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:10px; padding:14px 18px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:24px;">📦</span>
+          <div>
+            <strong style="font-size:13px; color:#1e40af;">Tek Dosya Olarak İndir (X.B.B.pdf):</strong>
+            <p style="font-size:11.5px; color:#1e3a8a; margin:0;">
+              Müteahhidin bu daireye ait 5 evrakı sırasıyla birleştirdiği hazır resmi dosya.
+            </p>
+          </div>
+        </div>
+        <button type="button" class="btn-action-sm" style="background:#1e40af; color:#fff; font-weight:700; padding:8px 16px;" onclick="downloadSingleBbPdf()">
+          📥 Daire Evraklarını İndir (.pdf)
+        </button>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #e2e8f0; padding-top:14px;">
+        <button type="button" class="yb-btn yb-btn-outline" onclick="closeMergerModal()">Kapat</button>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn-action-sm btn-outline-warning" style="background:#fffbeb; color:#b45309; border-color:#fcd34d; font-weight:700;" onclick="flagOwnerRevisionFromModal()">
+            ⚠️ Bu Dairede Eksik Bildir (Revizyona Yaz)
+          </button>
+          <button type="button" class="btn-action-sm btn-outline-success" style="background:#f0fdf4; color:#15803d; border-color:#86efac; font-weight:700;" onclick="approveOwnerDocsFromModal()">
+            ✓ Daire Evrakları Uygun
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL 3: BELEDİYE & MÜTEAHHİT REVİZYON / MESAJLAŞMA MASASI
+       ======================================================== -->
+  <div id="revision-chat-modal" class="print-modal" style="display:none;">
+    <div class="print-content" style="max-width: 650px; padding: 24px;">
+
+      <div
+        style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:14px;">
+        <div>
+          <h3 style="font-size:17.5px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+            <span>💬 Revizyon & İletişim Masası</span>
+            <span id="chat-modal-status-badge" class="badge-status-pill"
+              style="background:#fee2e2; color:#b91c1c;">Revizyon</span>
+          </h3>
+          <p style="font-size:12.5px; color:#64748b; margin-top:2px;">
+            Dosya: <strong id="chat-modal-app-no">-</strong> &bull; Firma: <strong
+              id="chat-modal-company-name">-</strong> (<span id="chat-modal-email">-</span>)
+          </p>
+        </div>
+        <button class="btn-copy-chip" onclick="closeRevisionChatModal()"
+          style="font-size:16px; padding:4px 10px;">✖</button>
+      </div>
+
+      <div class="chat-flow-box" id="chat-modal-messages-container">
+        <!-- JS ile mesaj balonları buraya eklenir -->
+      </div>
+
+      <div style="margin-top: 14px;">
+        <label for="chat-modal-input-text"
+          style="font-size:12.5px; font-weight:700; color:#334155; display:block; margin-bottom:6px;">
+          Müteahhide İletilecek Revizyon Talebi / Mesajınız:
+        </label>
+        <textarea id="chat-modal-input-text" class="form-control" rows="3"
+          placeholder="Örn: 2 nolu Bağımsız Bölüm tapusundaki hisse uyuşmuyor, lütfen güncel tapuyu yükleyip tekrar gönderiniz..."
+          style="font-size:13px;"></textarea>
+      </div>
+
+      <div
+        style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; border-top:1px solid #e2e8f0; padding-top:14px;">
+        <button type="button" class="yb-btn yb-btn-outline" onclick="closeRevisionChatModal()">Kapat</button>
+        <button type="button" class="btn-submit-big" style="padding:10px 20px; font-size:13.5px; background:#b91c1c;"
+          onclick="sendStaffRevisionMessage()">
+          ✉️ Revizyon Talebini Gönder ve Dosyayı İşaretle
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL: MÜTEAHHİT FİRMAYA AİT TÜM DOSYALAR & GEÇMİŞ
+       ======================================================== -->
+  <div id="contractor-applications-modal" class="print-modal" style="display:none;">
+    <div class="print-content" style="max-width: 860px; padding: 26px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #e2e8f0; padding-bottom:14px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:32px;">🏢</span>
+          <div>
+            <h3 id="cam-company-name" style="font-size:18px; font-weight:800; color:#0f172a; margin:0;">Müteahhit Firma Dosyaları</h3>
+            <p id="cam-company-meta" style="font-size:12.5px; color:#64748b; margin:2px 0 0 0;">Yetkili &amp; İletişim Bilgileri</p>
+          </div>
+        </div>
+        <button class="btn-copy-chip" onclick="closeContractorAppsModal()" style="font-size:16px; padding:4px 10px;">✖</button>
+      </div>
+
+      <div id="cam-applications-list" style="margin-top:14px;">
+        <!-- JS ile doldurulur -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL 4: YARISI BİZDEN GEREKEN EVRAKLAR & RESMİ KILAVUZ (5 SAYFA)
+       ======================================================== -->
+  <div id="guide-modal" class="print-modal" style="display:none;">
+    <div class="guide-modal-box">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; border-bottom:1.5px solid #e2e8f0; padding-bottom:14px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:32px;">🏛️</span>
+          <div>
+            <h3 style="font-size:18px; font-weight:800; color:#0f172a; margin:0;">
+              Yarısı Bizden Başvuru & Evrak Kılavuzu
+            </h3>
+            <p style="font-size:12px; color:#64748b; margin-top:2px;">
+              T.C. Güngören Belediyesi &bull; Kentsel Dönüşüm Müdürlüğü Resmi Başvuru Şartnamesi
+            </p>
+          </div>
+        </div>
+        <button class="btn-copy-chip" onclick="closeRequiredDocumentsGuideModal()" style="font-size:16px; padding:4px 10px;">✖</button>
+      </div>
+
+      <!-- Kılavuz Sekmeleri -->
+      <div class="guide-tab-nav">
+        <button type="button" class="guide-tab-btn active" id="gtab-btn-0" onclick="switchGuideTab(0)">
+          1. Gereken Evraklar (13 Madde)
+        </button>
+        <button type="button" class="guide-tab-btn" id="gtab-btn-1" onclick="switchGuideTab(1)">
+          2. Vekaletname Şartı & Noter Metni
+        </button>
+        <button type="button" class="guide-tab-btn" id="gtab-btn-2" onclick="switchGuideTab(2)">
+          3. Dikkat Edilecekler & İmza Günleri
+        </button>
+        <button type="button" class="guide-tab-btn" id="gtab-btn-3" onclick="switchGuideTab(3)">
+          4. Dijital Aktarım & Sıralama
+        </button>
+        <button type="button" class="guide-tab-btn" id="gtab-btn-4" onclick="switchGuideTab(4)">
+          5. Şematik Kesit Örneği
+        </button>
+      </div>
+
+      <!-- SEKME 0: GEREKEN EVRAKLAR LİSTESİ -->
+      <div id="guide-tab-content-0" class="guide-content-tab">
+        <div class="official-notice-box" style="margin-bottom:14px; background:#f0fdf4; border-color:#86efac;">
+          <strong style="color:#166534;">📋 YARISI BİZDEN KAMPANYASI GEREKEN EVRAKLAR LİSTESİ:</strong>
+        </div>
+
+        <div style="line-height:1.7;">
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Dilekçe:</strong> Mülk Sahibinin T.C. Kimlik Numarası, İsim Soyisim ve Güncel Cep Telefonu mutlaka yazılacak ve ıslak imzalı olacaktır.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Nüfus Cüzdan Fotokopisi:</strong> Her malik için kimlik kartı fotokopisi.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Eski Binaya Ait Tapular:</strong> Var ise mutlaka getirilmelidir.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Yeni Binanın Kat İrtifaklı Tapuları:</strong> Yeni projeye ait kat irtifak tapuları.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Eski Kat İrtifak Listesi:</strong> Var ise mutlaka getirilmelidir.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Eski Binaya Ait Şematik Kesit:</strong> Bağımsız bölümlerin sahiplerinin gösterildiği şematik kesit çizimi.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Emlak Beyanları:</strong> Yıkılan binaya ilişkin eski hak sahipliğini bildiren belgeler (Eski tapu arsa ise zorunlu, kat irtifaklı ise muaf).</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Müteahhit - Malik Bina Yapım Sözleşmesi:</strong> Kat karşılığı veya taahhüt sözleşmesi fotokopisi.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Müteahhit Hesap Cüzdanı:</strong> Vadesiz - Emlak Katılım Bankası.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Vergi Levhası:</strong> Müteahhit firmaya ait güncel vergi levhası.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Adi Ortaklık Sözleşmesi:</strong> İnşaatı üstlenen firmalar arasında Adi Ortaklık bulunması durumunda.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Vekaleten Başvuru Var İse Vekalet Fotokopisi:</strong> Noter onaylı resmi vekaletname.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Geçmiş Aylara Ait Faturalar:</strong> Yıkılan binaya ilişkin varsa elektrik, su, doğalgaz faturaları.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Hak Sahipliği Excel Tablosu:</strong> Resmi şablona göre hazırlanmış hak sahipliği listesi.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEKME 1: VEKALETNAME ÖRNEĞİ VE İÇERİK ŞARTI -->
+      <div id="guide-tab-content-1" class="guide-content-tab" style="display:none;">
+        <div class="official-notice-box" style="margin-bottom:12px; background:#fff7ed; border-color:#fed7aa;">
+          <strong style="color:#c2410c;">📜 VEKALETNAME ÖRNEĞİ VE İÇERİK ŞARTI (NOTER METNİ):</strong>
+          <p style="font-size:12px; color:#9a3412; margin-top:2px;">
+            Noterden çıkartılacak her vekaletnamenin içinde aşağıdaki metnin ve zorunlu ibarelerin bulunması yasal zorunluluktur.
+          </p>
+        </div>
+
+        <div class="notary-box">
+          <button type="button" class="notary-copy-btn" onclick="copyOfficialNotaryText(this)">
+            📋 Noter Metnini Kopyala
+          </button>
+          <div id="official-notary-text">"6306 Sayılı Kanun ve bu kanun hükümlerince yayımlanan yönetmelik, genelge, tüzük ve özelgeler kapsamında yapılacak tüm iş ve işlemlerde kendi imzası ile beni temsile 22.02.2024 tarih ve 8189 sayılı Cumhurbaşkanı Kararı ile koşulları belirlenen yapım için yardım kapsamında hibe ve/veya kredi desteği ile tahliye desteği başvurularını yapmaya bu kapsamda Başkanlık ile hibe taahhütnamesi ve/veya kredi sözleşmesi imzalamaya borçlandırmaya ve/veya feragatname imzalamaya bu hususlardan dolayı kanunen ve idareten yapmam gereken tüm işleri ifaya ikmale ve neticelendirmeye takibi muameleye hibe ile ilgili tapu dairesinde adımıza yapılacak hibelerden dolayı tescilleri yaptırmaya ilgili tapu senetlerini çıkartmaya teslim almaya icabında aharı tevkil teşrik ve azle vekaletnameden suretler çıkartmaya teslim almaya..."</div>
+        </div>
+
+        <div class="official-notice-box" style="background:#fef2f2; border-color:#fca5a5; margin-top:12px;">
+          <strong style="color:#b91c1c;">⚠️ ÖNEMLİ DİKKAT:</strong>
+          <p style="font-size:12.5px; color:#991b1b; margin-top:3px;">
+            Sunulacak her vekaletnamenin içeriğinde <strong>"6306 Sayılı Kanun"</strong>, <strong>"22.04.2024"</strong> ve <strong>"Yarısı Bizden Hibe ve Kredi Başvurusu"</strong> ibarelerinin geçmesi zorunludur!
+          </p>
+        </div>
+      </div>
+
+      <!-- SEKME 2: DİKKAT EDİLECEK HUSUSLAR & İMZA GÜNLERİ -->
+      <div id="guide-tab-content-2" class="guide-content-tab" style="display:none;">
+        <div class="official-notice-box" style="margin-bottom:14px; background:#fffbeb; border-color:#fde68a;">
+          <strong style="color:#b45309;">🏛️ DİKKAT EDİLMESİ GEREKEN HUSUSLAR & BELEDİYEDE İMZA GÜNLERİ:</strong>
+        </div>
+
+        <div style="line-height:1.7;">
+          <div class="guide-list-item" style="background:#fef2f2; padding:10px; border-radius:8px; border:1px solid #fee2e2;">
+            <span style="font-size:20px; line-height:1;">🚨</span>
+            <div>
+              <strong style="color:#b91c1c;">BELEDİYEDE İMZA GÜNÜ KURALI (VEKALETSİZ MALİKLER):</strong>
+              <div style="font-size:12.5px; color:#991b1b; margin-top:2px;">
+                Eğer malik noter vekaleti vermemiş ise, <strong>SALI VE PERŞEMBE GÜNLERİ</strong> Güngören Belediyesi Kentsel Dönüşüm Masasına bizzat gelerek yetkili personel huzurunda imza atmak zorundadır.
+              </div>
+            </div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Toplu Başvuru Kuralı:</strong> Dilekçeler toplu olarak getirilecek olup, bireysel başvuru alınmayacaktır.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Eski Bağımsız Bölüm No:</strong> Dilekçeler doldurulurken, yıkılan binadaki hak sahibi olduğunuz bağımsız bölüm numarasını dilekçeye yazmanız gerekmektedir.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Kat İrtifakı Şartı:</strong> Yeni inşaatın kat irtifak listesi çıkmadan başvurular alınamamaktadır.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>1.5 Kat M² Kuralı:</strong> Eski bina yıkım belgesindeki m² ile yeni yapı ruhsatındaki m² karşılaştırılacak olup, yeni yapıdaki otopark ve sığınak m²'si düşüldükten sonra kalan alan eski binanın 1.5 katını geçmemelidir.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Ruhsat Tarihi:</strong> Yeni yapı ruhsatı <strong>01.04.2023 tarihi ve sonrasında</strong> alınmış olmalıdır.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>Kat İrtifak Süresi:</strong> Yeni kurulmuş olan kat irtifakının üzerinden <strong>1 sene geçmemiş</strong> olması gerekmektedir.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot">&bull;</span>
+            <div><strong>İskansızlık:</strong> İnşaatın İskan Belgesi (Yapı Kullanma İzin Belgesi) almamış olması gerekmektedir.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEKME 3: DİJİTAL VE FLASH BELLEK AKTARIM SÜRECİ -->
+      <div id="guide-tab-content-3" class="guide-content-tab" style="display:none;">
+        <div class="official-notice-box" style="margin-bottom:14px; background:#eff6ff; border-color:#bfdbfe;">
+          <strong style="color:#1d4ed8;">💻 DOSYA HAZIRLIĞI VE FLASH BELLEK (DİJİTAL) AKTARIM SÜRECİ:</strong>
+        </div>
+
+        <div style="line-height:1.7;">
+          <div class="guide-list-item">
+            <span class="guide-dot" style="color:#059669; font-weight:bold;">1.</span>
+            <div>
+              <strong>Bağımsız Bölüm Klasörlemesi (X.B.B.pdf):</strong>
+              <div style="font-size:12px; color:#475569; margin-top:2px;">
+                Her bir bağımsız bölüm için evraklar ayrı ayrı taranıp tek bir PDF dosyası haline getirilmelidir (Örn: <code>1.B.B.pdf</code>). PDF içinde resmi sıralama:
+                <div style="background:#f8fafc; padding:8px 12px; border-radius:6px; margin-top:4px; font-weight:600; color:#0f3460;">
+                  1. İmzalı Dilekçe &bull; 2. Eski Tapu &bull; 3. Yeni Tapu &bull; 4. Malik Kimlik Fotokopisi &bull; 5. Emlak Beyanı (Eski tapu kat irtifaklıysa muaf, arsa tapusu ise zorunlu)
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot" style="color:#059669; font-weight:bold;">2.</span>
+            <div><strong>Sözleşmelerin Taranması (Toplu PDF):</strong> Tüm müteahhit - malik bina yapım sözleşmeleri tek tek değil, toplu olarak tek bir PDF dosyası halinde birleştirilip flash belleğe atılmalıdır.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot" style="color:#059669; font-weight:bold;">3.</span>
+            <div><strong>Vekaletnamelerin Taranması (Toplu PDF):</strong> Tüm vekaletnameler toplu olarak tek bir PDF dosyası halinde birleştirilerek flash belleğe atılmalıdır.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot" style="color:#059669; font-weight:bold;">4.</span>
+            <div><strong>Hak Sahipliği Listesi (Excel Formatında):</strong> Hazırlanan hak sahipliği tablosu mutlaka <code>.xls</code> veya <code>.csv</code> formatında flash belleğe yüklenmelidir.</div>
+          </div>
+          <div class="guide-list-item">
+            <span class="guide-dot" style="color:#059669; font-weight:bold;">5.</span>
+            <div><strong>Vergi Levhası ve Hesap Cüzdanı:</strong> Vergi levhası ve banka hesap cüzdanı tek PDF halinde flash belleğe yüklenmelidir.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEKME 4: ŞEMATİK KESİT ÖRNEĞİ -->
+      <div id="guide-tab-content-4" class="guide-content-tab" style="display:none;">
+        <div class="official-notice-box" style="margin-bottom:14px; background:#f8fafc; border-color:#cbd5e1;">
+          <strong>📐 ESKİ BİNAYA AİT ŞEMATİK KESİT ÇİZİM ÖRNEĞİ:</strong>
+        </div>
+
+        <div class="schematic-box">
+          <svg viewBox="0 0 500 420" style="max-width:440px; margin:0 auto; display:block;" fill="none" stroke="#2563eb" stroke-width="1.8">
+            <polygon points="250,20 100,90 400,90" fill="#eff6ff"/>
+            <rect x="100" y="90" width="300" height="45" fill="#ffffff"/>
+            <text x="110" y="118" fill="#1e40af" font-size="11" font-weight="bold" stroke="none">4 NO'LU KAT</text>
+            <text x="175" y="118" fill="#334155" font-size="10.5" stroke="none">KONUT NO: 11</text>
+            <text x="325" y="118" fill="#334155" font-size="10.5" stroke="none">KONUT NO: 12</text>
+            <rect x="100" y="135" width="300" height="45" fill="#f8fafc"/>
+            <text x="110" y="163" fill="#1e40af" font-size="11" font-weight="bold" stroke="none">3 NO'LU KAT</text>
+            <text x="175" y="163" fill="#334155" font-size="10.5" stroke="none">KONUT NO: 9</text>
+            <text x="325" y="163" fill="#334155" font-size="10.5" stroke="none">KONUT NO: 10</text>
+            <rect x="100" y="180" width="300" height="45" fill="#ffffff"/>
+            <text x="110" y="208" fill="#1e40af" font-size="11" font-weight="bold" stroke="none">2 NO'LU KAT</text>
+            <text x="175" y="208" fill="#334155" font-size="10.5" stroke="none">KONUT NO: 7</text>
+            <text x="325" y="208" fill="#334155" font-size="10.5" stroke="none">KONUT NO: 8</text>
+            <rect x="100" y="225" width="300" height="45" fill="#f8fafc"/>
+            <text x="110" y="253" fill="#1e40af" font-size="11" font-weight="bold" stroke="none">1 NO'LU KAT</text>
+            <text x="175" y="253" fill="#334155" font-size="10.5" stroke="none">KONUT NO: 5</text>
+            <text x="325" y="253" fill="#334155" font-size="10.5" stroke="none">KONUT NO: 6</text>
+            <rect x="100" y="270" width="300" height="55" fill="#fef3c7"/>
+            <text x="105" y="295" fill="#b45309" font-size="10" font-weight="bold" stroke="none">ZEMİN</text>
+            <text x="125" y="302" fill="#78350f" font-size="10" stroke="none">DÜKKAN (2)</text>
+            <text x="220" y="302" fill="#78350f" font-size="10" stroke="none">DÜKKAN (3)</text>
+            <text x="320" y="302" fill="#78350f" font-size="10" stroke="none">DÜKKAN (4)</text>
+            <rect x="100" y="325" width="300" height="45" fill="#e2e8f0"/>
+            <text x="110" y="353" fill="#334155" font-size="10.5" font-weight="bold" stroke="none">BODRUM</text>
+            <text x="230" y="353" fill="#0f172a" font-size="11" font-weight="bold" stroke="none">DÜKKAN NO (1)</text>
+          </svg>
+          <div style="font-size:12px; color:#64748b; margin-top:10px; font-weight:600;">
+            …… Ada / …… Parsel (Eski …… Ada / …… Parsel)
+          </div>
+        </div>
+      </div>
+
+      <!-- Alt Hızlı Eylemler Çubuğu -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-top:1.5px solid #e2e8f0; padding-top:16px; margin-top:20px;">
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn-action-sm btn-outline-info" onclick="exportOfficialExcel()">
+            📊 Boş / Resmi Excel Şablonu İndir
+          </button>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn-action-sm btn-primary-sm" onclick="printOfficialGuideModal()">
+            🖨️ Bu Kılavuzu Yazdır
+          </button>
+          <button type="button" class="yb-btn yb-btn-outline" onclick="closeRequiredDocumentsGuideModal()">
+            Kapat
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- YETKİLİ PERSONEL ŞİFRE DEĞİŞTİRME MODALI -->
+  <div id="staff-change-password-modal" class="custom-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; width:92%; max-width:420px; border-radius:14px; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.25);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="margin:0; font-size:17px; font-weight:800; color:#0f172a;">🔑 Yetkili Şifremi Değiştir</h3>
+        <button type="button" onclick="closeStaffChangePasswordModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#64748b;">✖</button>
+      </div>
+      <form onsubmit="event.preventDefault(); submitStaffChangePassword(); return false;">
+        <div class="form-group" style="margin-bottom:14px;">
+          <label style="font-size:12.5px; font-weight:700;">Yeni Giriş Şifreniz *</label>
+          <input type="password" id="scp-new-pass" class="form-control" placeholder="Yeni şifrenizi giriniz" required minlength="3">
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+          <label style="font-size:12.5px; font-weight:700;">Yeni Şifrenizi Tekrar Giriniz *</label>
+          <input type="password" id="scp-new-pass-confirm" class="form-control" placeholder="Yeni şifrenizi tekrar giriniz" required minlength="3">
+        </div>
+        <div style="display:flex; gap:8px; justify-content:flex-end;">
+          <button type="button" class="yb-btn yb-btn-outline" onclick="closeStaffChangePasswordModal()">Vazgeç</button>
+          <button type="submit" class="yb-btn yb-btn-primary">💾 Yeni Şifreyi Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: YETKİLİ ESKİ BİNA KAT KESİTİ İNCELEME MODALI -->
+  <div id="staff-schematic-modal" class="print-modal" style="display:none;">
+    <div class="print-content" id="print-schematic-area" style="max-width:850px; padding:28px; background:#fff;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:14px;">
+        <div>
+          <h3 style="font-size:17.5px; font-weight:800; color:#0f172a; margin:0;">
+            🏢 Eski Binaya Ait Şematik Kesit (Kılavuz Sayfa 5)
+          </h3>
+          <p style="font-size:12px; color:#64748b; margin-top:2px;" id="staff-schematic-sub">
+            Müteahhit tarafından hazırlanan bağımsız bölüm ve kat yerleşim şeması
+          </p>
+        </div>
+        <button class="btn-copy-chip" onclick="closeStaffSchematicModal()" style="font-size:16px; padding:4px 10px;">✖</button>
+      </div>
+
+      <div id="staff-schematic-svg-target" style="text-align:center; margin:15px auto;">
+        <!-- JS ile SVG doldurulur -->
+      </div>
+
+      <div class="print-no-print-bar">
+        <button class="yb-btn yb-btn-primary" onclick="window.print()">🖨️ Sayfayı Yazdır (A4 Resmi Çıktı)</button>
+        <button class="yb-btn yb-btn-outline" onclick="closeStaffSchematicModal()">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DOKÜMAN & EVRAK CANLI GÖRÜNTÜLEYİCİ (YETKİLİ İNCELEME) -->
+  <div id="document-preview-modal" class="print-modal" style="display:none; z-index:10000;">
+    <div class="print-content" style="max-width:850px; padding:26px; background:#fff;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #e2e8f0; padding-bottom:14px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:26px;">📑</span>
+          <div>
+            <h3 style="font-size:17.5px; font-weight:800; color:#0f172a; margin:0;" id="doc-preview-modal-title">
+              Evrak İnceleme Paneli
+            </h3>
+            <p style="font-size:12px; color:#64748b; margin-top:2px;" id="doc-preview-modal-sub">
+              Müteahhidin yüklediği orijinal belge ve resmi tapu/kimlik kayıtları
+            </p>
+          </div>
+        </div>
+        <button class="btn-copy-chip" onclick="closeDocumentPreviewModal()" style="font-size:16px; padding:4px 10px;">✖</button>
+      </div>
+
+      <!-- Evrak İçerik Alanı -->
+      <div id="doc-preview-modal-body" style="min-height:360px; max-height:65vh; overflow-y:auto; background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:20px;">
+        <!-- JS ile görsel/PDF veya resmi onaylı şablon buraya basılır -->
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #e2e8f0; padding-top:14px; margin-top:16px;">
+        <button type="button" class="yb-btn yb-btn-outline" onclick="closeDocumentPreviewModal()">Kapat</button>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn-action-sm btn-outline-warning" style="background:#fffbeb; color:#b45309; border-color:#fcd34d; font-weight:700;" onclick="flagCurrentDocRevision()">
+            ⚠️ Bu Belgede Eksik Var (Revizyona Yaz)
+          </button>
+          <button type="button" class="btn-action-sm btn-outline-success" style="background:#f0fdf4; color:#15803d; border-color:#86efac; font-weight:700;" onclick="approveCurrentDoc()">
+            ✓ Belgeyi Onayla (Uygun)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: YÖNETİCİ YENİ PERSONEL EKLEME MODALI -->
+  <div id="add-staff-modal" class="custom-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; width:92%; max-width:440px; border-radius:14px; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.25);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+        <h3 style="margin:0; font-size:17px; font-weight:800; color:#0f172a;">➕ Yeni İnceleme Personeli Ekle</h3>
+        <button type="button" onclick="closeAddStaffModal()" style="background:none; border:none; font-size:18px; cursor:pointer; color:#64748b;">✖</button>
+      </div>
+      <form onsubmit="event.preventDefault(); submitAddNewStaff(); return false;">
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-size:12.5px; font-weight:700;">Personel Adı Soyadı *</label>
+          <input type="text" id="new-staff-name" class="form-control" placeholder="Örn: Ayşe Yılmaz" required>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-size:12.5px; font-weight:700;">Görevi / Pozisyonu *</label>
+          <input type="text" id="new-staff-role" class="form-control" placeholder="Örn: İnceleme Personeli 3" required>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-size:12.5px; font-weight:700;">Kullanıcı ID / Kod (Tekil) *</label>
+          <input type="text" id="new-staff-id" class="form-control font-mono" placeholder="personel3" required>
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+          <label style="font-size:12.5px; font-weight:700;">İlk Giriş Şifresi *</label>
+          <input type="password" id="new-staff-pass" class="form-control" value="123456" required>
+          <small style="color:#64748b; font-size:11px;">Varsayılan: 123456 (Personel daha sonra değiştirebilir)</small>
+        </div>
+        <div style="display:flex; gap:8px; justify-content:flex-end;">
+          <button type="button" class="yb-btn yb-btn-outline" onclick="closeAddStaffModal()">Vazgeç</button>
+          <button type="submit" class="yb-btn yb-btn-primary">💾 Personeli Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: TÜM BİRLEŞTİRİLEN VE EKLENEN EVRAKLAR HAVUZU (YETKİLİ İNCELEME) -->
+  <div id="all-docs-modal" class="custom-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.7); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+    <div style="background:#fff; width:94%; max-width:960px; max-height:90vh; border-radius:16px; padding:24px; box-shadow:0 25px 50px rgba(0,0,0,0.3); display:flex; flex-direction:column; overflow:hidden;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1.5px solid #e2e8f0; padding-bottom:12px;">
+        <div>
+          <h3 style="margin:0; font-size:18px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+            <span>📁 Binaya Ait Tüm Birleştirilen ve Eklenen Evraklar</span>
+            <span id="all-docs-count-badge" class="badge-status-pill" style="background:#ecfdf5; color:#065f46; font-size:12px;">-</span>
+          </h3>
+          <p id="all-docs-subtitle" style="font-size:12.5px; color:#64748b; margin:2px 0 0 0;">
+            Yetkili olarak dosyadaki tüm bağımsız bölümlerin evraklarını inceleyebilir ve tek tek veya topluca indirebilirsiniz.
+          </p>
+        </div>
+        <button type="button" onclick="closeAllBuildingDocsModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#64748b; padding:4px 8px;">✖</button>
+      </div>
+
+      <!-- Evrak Listesi Tablosu -->
+      <div style="flex:1; overflow-y:auto; margin-bottom:16px; border:1px solid #e2e8f0; border-radius:10px;">
+        <table class="yb-table" style="margin:0;">
+          <thead>
+            <tr>
+              <th width="70">BB No</th>
+              <th width="140">Kat / Nitelik</th>
+              <th>Hak Sahibi Malik</th>
+              <th width="120">T.C. Kimlik</th>
+              <th width="140">Vekalet / İmza</th>
+              <th width="140">Evrak Dosyası</th>
+              <th width="180" class="text-center">İşlemler</th>
+            </tr>
+          </thead>
+          <tbody id="all-docs-table-body">
+            <!-- JS ile doldurulur -->
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1.5px solid #e2e8f0; padding-top:14px;">
+        <span style="font-size:12px; color:#64748b;">
+          💡 <strong>İpucu:</strong> Birleştirilmiş evraklar Resmi Kılavuz sırasına göredir: (1. Dilekçe ➔ 2. Eski Tapu ➔ 3. Yeni Tapu ➔ 4. Kimlik ➔ 5. Emlak Beyanı).
+        </span>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="yb-btn yb-btn-outline" onclick="closeAllBuildingDocsModal()">Kapat</button>
+          <button type="button" class="btn-action-sm btn-primary-sm" onclick="downloadAllBuildingDocs()" style="background:#0f766e; color:#fff; font-weight:700;">
+            📦 Mevcut Tüm Evrakları İndir
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MÜTEAHHİDE AİT TÜM GEÇMİŞ VE AKTİF BAŞVURU DOSYALARI LİSTESİ (YETKİLİ İNCELEME) -->
+  <div id="contractor-applications-modal" class="custom-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.7); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+    <div style="background:#fff; width:94%; max-width:960px; max-height:90vh; border-radius:16px; padding:24px; box-shadow:0 25px 50px rgba(0,0,0,0.3); display:flex; flex-direction:column; overflow:hidden;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; border-bottom:1.5px solid #e2e8f0; padding-bottom:14px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:32px;">🏢</span>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h3 style="margin:0; font-size:18px; font-weight:800; color:#0f172a;" id="cam-company-name">Firma Başvuruları</h3>
+              <span id="cam-apps-badge" class="badge-status-pill" style="background:#e0f2fe; color:#0369a1; font-weight:800;">-</span>
+            </div>
+            <p id="cam-company-meta" style="font-size:12.5px; color:#64748b; margin:3px 0 0 0;">
+              Yetkili Bilgisi &bull; E-posta: -
+            </p>
+          </div>
+        </div>
+        <button type="button" onclick="closeContractorAppsModal()" style="background:none; border:none; font-size:22px; cursor:pointer; color:#64748b; padding:4px 8px;">✖</button>
+      </div>
+
+      <!-- Bilgilendirme Notu -->
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 16px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <div style="font-size:12px; color:#475569;">
+          ℹ️ Bu firmanın sisteme ilettiği tüm projeler (geçmişte gönderilmiş/onaylanmış, revizyon istenmiş ve havuzdaki aktif dosyalar) aşağıda listelenmektedir.
+        </div>
+        <span style="font-size:11.5px; font-weight:700; color:#0369a1; background:#e0f2fe; padding:3px 8px; border-radius:6px;">
+          Resmi Başvuru Geçmişi
+        </span>
+      </div>
+
+      <!-- Başvurular Tablosu / Listesi -->
+      <div style="flex:1; overflow-y:auto; margin-bottom:16px; border:1px solid #e2e8f0; border-radius:10px;">
+        <table class="yb-table" style="margin:0;">
+          <thead>
+            <tr>
+              <th width="140">Dosya Takip No</th>
+              <th width="120">Başvuru Tarihi</th>
+              <th>Ada / Parsel &amp; Mahalle</th>
+              <th width="110" class="text-center">Malik / BB</th>
+              <th width="170" class="text-center">Dosya Durumu</th>
+              <th width="130" class="text-center">Evraklar</th>
+              <th width="120" class="text-center">İşlem</th>
+            </tr>
+          </thead>
+          <tbody id="cam-applications-list">
+            <!-- JS ile doldurulur -->
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; border-top:1.5px solid #e2e8f0; padding-top:14px;">
+        <button type="button" class="yb-btn yb-btn-outline" onclick="closeContractorAppsModal()">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="yetkili.js"></script>
+</body>
+
+</html>
