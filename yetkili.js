@@ -230,6 +230,9 @@ async function saveDocToDB(docKey, dataUrl) {
     const store = tx.objectStore(YB_STORE_NAME);
     store.put({ id: docKey, dataUrl: dataUrl, timestamp: Date.now() });
   } catch (e) {}
+  if (window.FirebaseSync && typeof window.FirebaseSync.pushDocToCloud === "function") {
+    window.FirebaseSync.pushDocToCloud(docKey, dataUrl);
+  }
 }
 
 async function getDocFromDB(docKey) {
@@ -244,28 +247,41 @@ async function getDocFromDB(docKey) {
   } catch (e) {}
   try {
     const db = await openDocDB();
-    if (!db) return null;
-    return new Promise((resolve) => {
-      try {
-        const tx = db.transaction(YB_STORE_NAME, "readonly");
-        const store = tx.objectStore(YB_STORE_NAME);
-        const req = store.get(docKey);
-        req.onsuccess = () => {
-          if (req.result && req.result.dataUrl) {
-            window.YB_DOC_STORE[docKey] = req.result.dataUrl;
-            resolve(req.result.dataUrl);
-          } else {
-            resolve(null);
-          }
-        };
-        req.onerror = () => resolve(null);
-      } catch (err) {
-        resolve(null);
+    if (db) {
+      const dbRes = await new Promise((resolve) => {
+        try {
+          const tx = db.transaction(YB_STORE_NAME, "readonly");
+          const store = tx.objectStore(YB_STORE_NAME);
+          const req = store.get(docKey);
+          req.onsuccess = () => {
+            if (req.result && req.result.dataUrl) {
+              window.YB_DOC_STORE[docKey] = req.result.dataUrl;
+              resolve(req.result.dataUrl);
+            } else {
+              resolve(null);
+            }
+          };
+          req.onerror = () => resolve(null);
+        } catch (err) {
+          resolve(null);
+        }
+      });
+      if (dbRes) return dbRes;
+    }
+  } catch (e) {}
+
+  // Buluttan (Firebase) çekmeyi dene (müteahhit telefondan yüklemişse)
+  if (window.FirebaseSync && typeof window.FirebaseSync.fetchDocFromCloud === "function") {
+    try {
+      const cloudDoc = await window.FirebaseSync.fetchDocFromCloud(docKey);
+      if (cloudDoc) {
+        window.YB_DOC_STORE[docKey] = cloudDoc;
+        try { sessionStorage.setItem(docKey, cloudDoc); } catch(e){}
+        return cloudDoc;
       }
-    });
-  } catch (e) {
-    return null;
+    } catch(e){}
   }
+  return null;
 }
 
 async function preloadDocsFromDB() {
@@ -507,6 +523,11 @@ function saveDataToStorage() {
       safeSetLocalStorage("yb_active_staff_id", currentStaff.id);
     } else {
       localStorage.removeItem("yb_active_staff_id");
+    }
+
+    // Bulut Senkronizasyonu (Google Firebase)
+    if (window.FirebaseSync && typeof window.FirebaseSync.pushAllToCloud === "function") {
+      window.FirebaseSync.pushAllToCloud();
     }
   } catch (e) {
     console.error("Yetkili kaydetme hatası:", e);
@@ -1158,6 +1179,9 @@ function adminDeleteApplication(appId, appNo) {
 
   // 7. Depolama ve arayüz güncelle
   saveDataToStorage();
+  if (window.FirebaseSync && typeof window.FirebaseSync.deleteApplicationFromCloud === "function") {
+    window.FirebaseSync.deleteApplicationFromCloud(targetId);
+  }
   renderApplicationsPool();
   renderAdminQuickApplicationsList();
   renderRegisteredContractorsList();

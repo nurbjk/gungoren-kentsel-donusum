@@ -1034,6 +1034,9 @@ async function saveDocToDB(docKey, dataUrl) {
     const store = tx.objectStore(YB_STORE_NAME);
     store.put({ id: docKey, dataUrl: dataUrl, timestamp: Date.now() });
   } catch (e) { }
+  if (window.FirebaseSync && typeof window.FirebaseSync.pushDocToCloud === "function") {
+    window.FirebaseSync.pushDocToCloud(docKey, dataUrl);
+  }
 }
 
 async function getDocFromDB(docKey) {
@@ -1048,28 +1051,41 @@ async function getDocFromDB(docKey) {
   } catch (e) { }
   try {
     const db = await openDocDB();
-    if (!db) return null;
-    return new Promise((resolve) => {
-      try {
-        const tx = db.transaction(YB_STORE_NAME, "readonly");
-        const store = tx.objectStore(YB_STORE_NAME);
-        const req = store.get(docKey);
-        req.onsuccess = () => {
-          if (req.result && req.result.dataUrl) {
-            window.YB_DOC_STORE[docKey] = req.result.dataUrl;
-            resolve(req.result.dataUrl);
-          } else {
-            resolve(null);
-          }
-        };
-        req.onerror = () => resolve(null);
-      } catch (err) {
-        resolve(null);
+    if (db) {
+      const dbRes = await new Promise((resolve) => {
+        try {
+          const tx = db.transaction(YB_STORE_NAME, "readonly");
+          const store = tx.objectStore(YB_STORE_NAME);
+          const req = store.get(docKey);
+          req.onsuccess = () => {
+            if (req.result && req.result.dataUrl) {
+              window.YB_DOC_STORE[docKey] = req.result.dataUrl;
+              resolve(req.result.dataUrl);
+            } else {
+              resolve(null);
+            }
+          };
+          req.onerror = () => resolve(null);
+        } catch (err) {
+          resolve(null);
+        }
+      });
+      if (dbRes) return dbRes;
+    }
+  } catch (e) { }
+
+  // Buluttan (Firebase) çekmeyi dene (farklı cihazdan yüklenmişse)
+  if (window.FirebaseSync && typeof window.FirebaseSync.fetchDocFromCloud === "function") {
+    try {
+      const cloudDoc = await window.FirebaseSync.fetchDocFromCloud(docKey);
+      if (cloudDoc) {
+        window.YB_DOC_STORE[docKey] = cloudDoc;
+        try { sessionStorage.setItem(docKey, cloudDoc); } catch (e) { }
+        return cloudDoc;
       }
-    });
-  } catch (e) {
-    return null;
+    } catch (e) { }
   }
+  return null;
 }
 
 async function preloadDocsFromDB() {
@@ -1386,6 +1402,11 @@ function executeSaveDataToStorage() {
     } else {
       localStorage.removeItem("yb_active_contractor");
     }
+
+    // Bulut Senkronizasyonu (Google Firebase)
+    if (window.FirebaseSync && typeof window.FirebaseSync.pushAllToCloud === "function") {
+      window.FirebaseSync.pushAllToCloud();
+    }
   } catch (e) {
     console.warn("Storage quota warning, saving lightweight snapshot:", e);
     try {
@@ -1614,6 +1635,11 @@ function handleContractorRegister(e) {
   const phone = cleanPhoneInput(document.getElementById("reg-phone")?.value);
   const password = document.getElementById("reg-password")?.value.trim();
 
+  if (!password || password.length < 6) {
+    showToast("Hesap şifresi en az 6 karakter olmalıdır!", "warning");
+    return;
+  }
+
   if (contractorUsers.some(u => u.email.toLowerCase() === email)) {
     showToast("Bu e-posta adresi ile zaten kayıtlı bir firma hesabı mevcut!", "warning");
     return;
@@ -1635,6 +1661,11 @@ function handleContractorRegister(e) {
   contractorUsers.push(newUser);
   activeContractorUser = newUser;
   saveDataToStorage();
+
+  if (window.FirebaseSync && typeof window.FirebaseSync.pushContractorUser === "function") {
+    window.FirebaseSync.pushContractorUser(newUser);
+  }
+
   updateContractorAuthUI();
   loadContractorDraft();
   showToast(`Tebrikler! ${company} firma hesabınız oluşturuldu ve giriş yapıldı.`, "success");
@@ -4050,6 +4081,10 @@ function handleContractorSubmit(e) {
         safeSetLocalStorage("yb_applications_list", sanitizeForStorage(applicationsList));
         saveDataToStorage();
 
+        if (window.FirebaseSync && typeof window.FirebaseSync.pushApplication === "function") {
+          window.FirebaseSync.pushApplication(existingApp);
+        }
+
         // Revizyon uyarı kutusunu anında temizle ve gizle
         checkContractorRevisions();
 
@@ -4151,6 +4186,10 @@ function handleContractorSubmit(e) {
     safeSetLocalStorage("yb_applications_list", sanitizeForStorage(applicationsList));
 
     saveDataToStorage();
+
+    if (window.FirebaseSync && typeof window.FirebaseSync.pushApplication === "function") {
+      window.FirebaseSync.pushApplication(newApplication);
+    }
     if (typeof updateHeaderCounts === "function") updateHeaderCounts();
     if (typeof renderApplicationsPool === "function") renderApplicationsPool();
     if (typeof renderRegisteredContractorsList === "function") renderRegisteredContractorsList();
@@ -6675,75 +6714,111 @@ async function appendFileToPdfDoc(mergedPdf, file) {
   return appendAnyDocToPdfDoc(mergedPdf, file);
 }
 
+// Türkçe karakterleri ve özel sembolleri PDF standart Helvetica fontunun (WinAnsi / Windows-1252)
+// sorunsuz işleyebileceği güvenli ASCII eşdeğerlerine dönüştürür.
+function toWinAnsiSafe(text) {
+  if (text === null || text === undefined) return "";
+  let str = String(text);
+  const map = {
+    'İ': 'I', 'I': 'I', 'ı': 'i', 'i': 'i',
+    'Ğ': 'G', 'ğ': 'g',
+    'Ü': 'U', 'ü': 'u',
+    'Ş': 'S', 'ş': 's',
+    'Ö': 'O', 'ö': 'o',
+    'Ç': 'C', 'ç': 'c',
+    'â': 'a', 'Â': 'A', 'î': 'i', 'Î': 'I', 'û': 'u', 'Û': 'U',
+    '’': "'", '‘': "'", '`': "'", '“': '"', '”': '"',
+    '–': '-', '—': '-', '…': '...'
+  };
+  str = str.replace(/[İıĞğÜüŞşÖöÇçâÂîÎûÛ’‘`“”–—…]/g, m => map[m] || m);
+  // ASCII 32..126 dışındaki tüm karakterleri güvenli boşluğa çevir (WinAnsi 0x0130 çökmesini 100% önler)
+  str = str.replace(/[^\x20-\x7E]/g, ' ');
+  return str;
+}
+
 // Dilekçe sayfasını PDF olarak oluştur ve ekle
 async function appendOfficialPetitionPage(mergedPdf, app, owner) {
-  const page = mergedPdf.addPage([595.28, 841.89]); // A4
-  const pLib = window.PDFLib || window.pdfLib;
-  const font = await mergedPdf.embedFont(pLib.StandardFonts.HelveticaBold);
-  const regularFont = await mergedPdf.embedFont(pLib.StandardFonts.Helvetica);
+  try {
+    const page = mergedPdf.addPage([595.28, 841.89]); // A4
+    const pLib = window.PDFLib || window.pdfLib;
+    if (!pLib) return;
+    const font = await mergedPdf.embedFont(pLib.StandardFonts.HelveticaBold);
+    const regularFont = await mergedPdf.embedFont(pLib.StandardFonts.Helvetica);
 
-  // Başlıklar
-  page.drawText("EK-1", { x: 520, y: 800, size: 14, font });
-  page.drawText("T.C. GUNGOREN BELEDIYE BASKANLIGINA", { x: 140, y: 760, size: 13, font });
-  page.drawText("(Kentsel Donusum Mudurlugu)", { x: 210, y: 742, size: 11, font: regularFont });
+    const safeDraw = (txt, opts) => {
+      try {
+        const s = toWinAnsiSafe(txt);
+        if (s && s.trim()) page.drawText(s, opts);
+      } catch (err) {
+        console.warn("Metin yazma uyarısı:", err);
+      }
+    };
 
-  // Metin satırları
-  const ykn = (app && app.cadastre && app.cadastre.ykn) || "---";
-  const parsedCad = parseAdaParsel(app && app.cadastre ? (app.cadastre.oldAdaParsel || app.cadastre.newAdaParsel) : "");
-  const ada = parsedCad.ada;
-  const parsel = parsedCad.parsel || "---";
-  const addr = (app && app.cadastre && app.cadastre.address) ? `${app.cadastre.neighborhood || ''} ${app.cadastre.address}`.trim() : "Gungoren";
-  const malikAddr = (owner && owner.ownerAddress && String(owner.ownerAddress).trim()) ? owner.ownerAddress : addr;
-  const unitNo = owner.oldUnitNo || "1";
-  const fullName = `${owner.firstName || ''} ${owner.lastName || ''}`.trim() || "Malik";
-  const tc = owner.tc || "---";
-  const dateStr = new Date().toLocaleDateString("tr-TR");
+    // Başlıklar
+    safeDraw("EK-1", { x: 520, y: 800, size: 14, font });
+    safeDraw("T.C. GUNGOREN BELEDIYE BASKANLIGINA", { x: 140, y: 760, size: 13, font });
+    safeDraw("(Kentsel Donusum Mudurlugu)", { x: 210, y: 742, size: 11, font: regularFont });
 
-  const adaLine = ada ? `${ykn} yapi kimlik, ${ada} ada, ${parsel} parsel numarali,` : `${ykn} yapi kimlik, ${parsel} parsel numarali,`;
+    // Metin satırları
+    const ykn = toWinAnsiSafe((app && app.cadastre && app.cadastre.ykn) || "---");
+    const parsedCad = parseAdaParsel(app && app.cadastre ? (app.cadastre.oldAdaParsel || app.cadastre.newAdaParsel) : "");
+    const ada = toWinAnsiSafe(parsedCad.ada || "");
+    const parsel = toWinAnsiSafe(parsedCad.parsel || "---");
+    const addr = (app && app.cadastre && app.cadastre.address) ? `${app.cadastre.neighborhood || ''} ${app.cadastre.address}`.trim() : "Gungoren";
+    const malikAddr = toWinAnsiSafe((owner && owner.ownerAddress && String(owner.ownerAddress).trim()) ? owner.ownerAddress : addr);
+    const unitNo = toWinAnsiSafe(owner ? (owner.oldUnitNo || "1") : "1");
+    const fullName = toWinAnsiSafe(owner ? `${owner.firstName || ''} ${owner.lastName || ''}`.trim() || "Malik" : "Malik");
+    const tc = toWinAnsiSafe(owner ? (owner.tc || "---") : "---");
+    const dateStr = toWinAnsiSafe(new Date().toLocaleDateString("tr-TR"));
 
-  const lines = [
-    adaLine,
-    `${malikAddr} adresinde yer alan parselde e-devlet kapisi uzerinden 26.04.2023-02.06.2023`,
-    `tarihleri arasinda yapim icin yardim basvurusunda bulunulmus olup, 22.02.2024 tarih ve 8189`,
-    `sayili Cumhurbaskani Karari ile kosullari belirlenen yapim icin yardim kapsaminda yukarida`,
-    `bilgilerini ve acik adresini belirttigim yapida bulunan ${unitNo} nolu bagimsiz bolum icin`,
-    `hibe ve/veya kredi desteginden faydalanmak istiyorum.`,
-    ``,
-    `Yapim icin yardim basvurumun uygun bulunmasi halinde; tarafimca ve Baskanlikca`,
-    `imzalanacak hibe taahhutnamesi ve/veya kredi sozlesmesinde belirtilen tutarin, 22.02.2024`,
-    `tarih ve 8189 sayili Cumhurbaskani Kararinda belirtilen kosullar dahilinde aktarilmasi hususunda;`,
-    ``,
-    `Geregini arz ederim.`
-  ];
+    const adaLine = ada ? `${ykn} yapi kimlik, ${ada} ada, ${parsel} parsel numarali,` : `${ykn} yapi kimlik, ${parsel} parsel numarali,`;
 
-  let yPos = 690;
-  lines.forEach(line => {
-    if (line) page.drawText(line, { x: 50, y: yPos, size: 10.5, font: regularFont });
-    yPos -= 19;
-  });
+    const lines = [
+      adaLine,
+      `${malikAddr} adresinde yer alan parselde e-devlet kapisi uzerinden 26.04.2023-02.06.2023`,
+      `tarihleri arasinda yapim icin yardim basvurusunda bulunulmus olup, 22.02.2024 tarih ve 8189`,
+      `sayili Cumhurbaskani Karari ile kosullari belirlenen yapim icin yardim kapsaminda yukarida`,
+      `bilgilerini ve acik adresini belirttigim yapida bulunan ${unitNo} nolu bagimsiz bolum icin`,
+      `hibe ve/veya kredi desteginden faydalanmak istiyorum.`,
+      ``,
+      `Yapim icin yardim basvurumun uygun bulunmasi halinde; tarafimca ve Baskanlikca`,
+      `imzalanacak hibe taahhutnamesi ve/veya kredi sozlesmesinde belirtilen tutarin, 22.02.2024`,
+      `tarih ve 8189 sayili Cumhurbaskani Kararinda belirtilen kosullar dahilinde aktarilmasi hususunda;`,
+      ``,
+      `Geregini arz ederim.`
+    ];
 
-  // Sağ İmza Bloğu
-  page.drawText(`${dateStr}`, { x: 420, y: 450, size: 10, font: regularFont });
-  page.drawText(fullName, { x: 420, y: 432, size: 11, font });
+    let yPos = 690;
+    lines.forEach(line => {
+      if (line) safeDraw(line, { x: 50, y: yPos, size: 10.5, font: regularFont });
+      yPos -= 19;
+    });
 
-  if (owner.hasProxy) {
-    page.drawText(`TCKN: ${owner.proxyTc || '---'}`, { x: 420, y: 415, size: 10, font });
-    page.drawText(`VK: ${owner.proxyName || '---'}`, { x: 420, y: 398, size: 10, font });
-    page.drawText("Imza", { x: 450, y: 365, size: 10, font: regularFont });
-  } else {
-    page.drawText(`T.C. Kimlik No: ${tc}`, { x: 420, y: 412, size: 10, font: regularFont });
-    page.drawText("Imza", { x: 450, y: 375, size: 10, font: regularFont });
+    // Sağ İmza Bloğu
+    safeDraw(`${dateStr}`, { x: 420, y: 450, size: 10, font: regularFont });
+    safeDraw(fullName, { x: 420, y: 432, size: 11, font });
+
+    if (owner && owner.hasProxy) {
+      safeDraw(`TCKN: ${toWinAnsiSafe(owner.proxyTc || '---')}`, { x: 420, y: 415, size: 10, font });
+      safeDraw(`VK: ${toWinAnsiSafe(owner.proxyName || '---')}`, { x: 420, y: 398, size: 10, font });
+      safeDraw("Imza", { x: 450, y: 365, size: 10, font: regularFont });
+    } else {
+      safeDraw(`T.C. Kimlik No: ${tc}`, { x: 420, y: 412, size: 10, font: regularFont });
+      safeDraw("Imza", { x: 450, y: 375, size: 10, font: regularFont });
+    }
+
+    // Sol Alt İletişim & Ekler
+    safeDraw("Iletisim Bilgileri", { x: 50, y: 340, size: 10.5, font });
+    safeDraw(`Adres   : ${malikAddr}`, { x: 50, y: 320, size: 9.5, font: regularFont });
+    safeDraw(`Telefon : ${toWinAnsiSafe(owner ? owner.phone || '---' : '---')}`, { x: 50, y: 302, size: 9.5, font: regularFont });
+
+    safeDraw("EKLER:", { x: 50, y: 260, size: 10, font });
+    safeDraw("1- Nufus cuzdani fotokopisi", { x: 50, y: 242, size: 9, font: regularFont });
+    safeDraw("2- Vekaleten yapilan basvurularda vekaletname asli ve vekilin kimlik fotokopisi", { x: 50, y: 226, size: 9, font: regularFont });
+    safeDraw("3- Kat irtifak listesi", { x: 50, y: 210, size: 9, font: regularFont });
+  } catch (petError) {
+    console.error("Dilekçe sayfası oluşturulurken hata:", petError);
   }
-
-  // Sol Alt İletişim & Ekler
-  page.drawText("Iletisim Bilgileri", { x: 50, y: 340, size: 10.5, font });
-  page.drawText(`Adres   : ${malikAddr}`, { x: 50, y: 320, size: 9.5, font: regularFont });
-  page.drawText(`Telefon : ${owner.phone || '---'}`, { x: 50, y: 302, size: 9.5, font: regularFont });
-
-  page.drawText("EKLER:", { x: 50, y: 260, size: 10, font });
-  page.drawText("1- Nufus cuzdani fotokopisi", { x: 50, y: 242, size: 9, font: regularFont });
-  page.drawText("2- Vekaleten yapilan basvurularda vekaletname asli ve vekilin kimlik fotokopisi", { x: 50, y: 226, size: 9, font: regularFont });
-  page.drawText("3- Kat irtifak listesi", { x: 50, y: 210, size: 9, font: regularFont });
 }
 
 // =========================================================================
@@ -7351,8 +7426,8 @@ function submitChangePassword() {
   const pass1 = document.getElementById("cp-new-pass")?.value || "";
   const pass2 = document.getElementById("cp-new-pass-confirm")?.value || "";
 
-  if (pass1.length < 4) {
-    showToast("Yeni şifreniz en az 4 karakter olmalıdır!", "warning");
+  if (pass1.length < 6) {
+    showToast("Yeni şifreniz en az 6 karakter olmalıdır!", "warning");
     return;
   }
   if (pass1 !== pass2) {

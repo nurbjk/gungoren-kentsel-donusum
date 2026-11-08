@@ -43,6 +43,7 @@
       </div>
 
       <div class="yb-nav-actions" style="display:flex; align-items:center; gap:10px;">
+        <div class="cloud-sync-badge-target"></div>
         <button type="button" class="btn-action-sm" onclick="openRequiredDocumentsGuideModal()"
           style="background:#f59e0b; color:#fff; font-weight:800; border:none; padding:7px 14px; border-radius:20px; cursor:pointer; box-shadow:0 2px 8px rgba(245,158,11,0.35);">
           📋 İstenen Evraklar Listesi & Kılavuz
@@ -129,7 +130,7 @@
           </div>
           <div class="form-group" style="margin-bottom: 20px;">
             <label for="reg-password">Hesap Şifresi Belirleyin *</label>
-            <input type="password" id="reg-password" minlength="4" class="form-control" placeholder="En az 4 karakter"
+            <input type="password" id="reg-password" minlength="6" class="form-control" placeholder="En az 6 karakter (Örn: 123456)"
               required>
           </div>
           <button type="submit" class="btn-submit-big"
@@ -1674,13 +1675,13 @@
       <form onsubmit="event.preventDefault(); submitChangePassword(); return false;">
         <div class="form-group" style="margin-bottom:14px;">
           <label style="font-size:12.5px; font-weight:700;">Yeni Şifreniz *</label>
-          <input type="password" id="cp-new-pass" class="form-control" placeholder="Yeni şifrenizi giriniz" required
-            minlength="4">
+          <input type="password" id="cp-new-pass" class="form-control" placeholder="En az 6 karakter giriniz" required
+            minlength="6">
         </div>
         <div class="form-group" style="margin-bottom:18px;">
           <label style="font-size:12.5px; font-weight:700;">Yeni Şifrenizi Tekrar Giriniz *</label>
           <input type="password" id="cp-new-pass-confirm" class="form-control"
-            placeholder="Yeni şifrenizi tekrar giriniz" required minlength="4">
+            placeholder="Yeni şifrenizi tekrar giriniz" required minlength="6">
         </div>
         <div style="display:flex; gap:8px; justify-content:flex-end;">
           <button type="button" class="yb-btn yb-btn-outline" onclick="closeChangePasswordModal()">Vazgeç</button>
@@ -1981,6 +1982,7 @@
     </div>
   </div>
 
+  <script src="firebase-sync.js"></script>
   <script src="yarisi-bizden.js"></script>
 </body>
 
