@@ -2343,6 +2343,7 @@ function renderContractorDrafts() {
 
   drafts.forEach(app => {
     const isCurrentlyEditing = (activeContractorEditingAppId === app.id);
+    const isRevDraft = app.isRevisionDraft || app.status === "revizyon";
     const totalOwners = (app.owners || []).length;
     const attachedOwners = (app.owners || []).filter(u => u.attachedDoc && u.attachedDoc.dataUrl).length;
     const completionPercent = totalOwners > 0 ? Math.round((attachedOwners / totalOwners) * 100) : 0;
@@ -2357,19 +2358,26 @@ function renderContractorDrafts() {
     }
 
     const lastUpdatedStr = app.lastUpdated ? new Date(app.lastUpdated).toLocaleString("tr-TR") : (app.date || app.submissionDate || "-");
+    const staffMsgs = (app.messages || []).filter(m => m.senderRole === "staff");
 
     html += `
-      <div style="background:#fefce8; border:1.5px solid ${isCurrentlyEditing ? '#ca8a04' : '#fde047'}; border-radius:14px; padding:18px 22px; box-shadow:0 3px 12px rgba(234,179,8,0.12); transition:all 0.2s ease;">
+      <div style="background:${isRevDraft ? '#fff7ed' : '#fefce8'}; border:1.5px solid ${isRevDraft ? '#fb923c' : (isCurrentlyEditing ? '#ca8a04' : '#fde047')}; border-radius:14px; padding:18px 22px; box-shadow:0 3px 12px ${isRevDraft ? 'rgba(249,115,22,0.15)' : 'rgba(234,179,8,0.12)'}; transition:all 0.2s ease;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
           <div>
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <span class="font-mono" style="font-size:15px; font-weight:800; color:#854d0e;">${escapeHtml(app.appNo)}</span>
-              <span class="badge-status-pill" style="background:#fef08a; color:#854d0e; font-weight:800; border:1px solid #facc15;">
-                💾 TASLAK (YARIM KALDI)
-              </span>
+              <span class="font-mono" style="font-size:15px; font-weight:800; color:${isRevDraft ? '#c2410c' : '#854d0e'};">${escapeHtml(app.appNo)}</span>
+              ${isRevDraft ? `
+                <span class="badge-status-pill" style="background:#ffedd5; color:#c2410c; font-weight:800; border:1px solid #fdba74;">
+                  ⚠️ REVİZYON TASLAĞI (BELEDİYE DÜZELTME İSTEDİ)
+                </span>
+              ` : `
+                <span class="badge-status-pill" style="background:#fef08a; color:#854d0e; font-weight:800; border:1px solid #facc15;">
+                  💾 TASLAK (YARIM KALDI)
+                </span>
+              `}
               ${isCurrentlyEditing ? `<span class="badge-status-pill" style="background:#dcfce7; color:#15803d; font-weight:800; border:1px solid #86efac;">🟢 Şu An Düzenleniyor</span>` : ''}
               ${structBadge}
-              <span style="font-size:12px; color:#713f12;">🕒 Son Kayıt: ${escapeHtml(lastUpdatedStr)}</span>
+              <span style="font-size:12px; color:${isRevDraft ? '#9a3412' : '#713f12'};">🕒 Son Kayıt: ${escapeHtml(lastUpdatedStr)}</span>
             </div>
 
             <h4 style="font-size:16px; font-weight:800; color:#0f3460; margin:6px 0 2px;">
@@ -2382,17 +2390,24 @@ function renderContractorDrafts() {
               📁 Evraklar: <strong style="color:${attachedOwners === totalOwners && totalOwners > 0 ? '#15803d' : '#d97706'}">${attachedOwners}/${totalOwners} Yüklendi (%${completionPercent})</strong>
             </div>
 
+            ${(isRevDraft && staffMsgs.length > 0) ? `
+              <div style="background:#fff; border:1px solid #fed7aa; border-radius:8px; padding:10px 14px; margin-top:10px; font-size:12.5px;">
+                <strong style="color:#c2410c;">⚠️ Belediye Yetkilisinin Düzeltme Talebi:</strong>
+                <div style="color:#7c2d12; margin-top:2px; line-height:1.4;">"${escapeHtml(staffMsgs[staffMsgs.length - 1].text)}"</div>
+              </div>
+            ` : ''}
+
             <div style="margin-top:8px; display:flex; align-items:center; gap:8px;">
               <div style="flex:1; max-width:240px; height:7px; background:#e2e8f0; border-radius:10px; overflow:hidden;">
                 <div style="height:100%; width:${completionPercent}%; background:${completionPercent === 100 ? '#16a34a' : '#eab308'}; border-radius:10px; transition:width 0.3s ease;"></div>
               </div>
-              <span style="font-size:11px; color:#854d0e; font-weight:700;">%${completionPercent} Tamamlandı</span>
+              <span style="font-size:11px; color:${isRevDraft ? '#c2410c' : '#854d0e'}; font-weight:700;">%${completionPercent} Tamamlandı</span>
             </div>
           </div>
 
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-            <button type="button" class="btn-submit-big" onclick="loadAndResumeDraft('${app.id}')" style="background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%); padding:8px 18px; font-size:13px; font-weight:800; box-shadow:0 3px 10px rgba(2,132,199,0.3);">
-              ✏️ Düzenlemeye Kaldığın Yerden Devam Et
+            <button type="button" class="btn-submit-big" onclick="loadAndResumeDraft('${app.id}')" style="background:${isRevDraft ? 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)'}; padding:8px 18px; font-size:13px; font-weight:800; box-shadow:0 3px 10px ${isRevDraft ? 'rgba(234,88,12,0.3)' : 'rgba(2,132,199,0.3)'};">
+              ${isRevDraft ? '🔄 Revizyonu Düzenlemeye Devam Et' : '✏️ Düzenlemeye Kaldığın Yerden Devam Et'}
             </button>
             <button type="button" class="btn-action-sm btn-outline-danger" onclick="deleteDraftApplication('${app.id}')" style="padding:7px 12px; border-radius:8px;" title="Taslağı Sil">
               🗑️ Sil
@@ -2482,21 +2497,31 @@ function renderContractorMyApps() {
     const totalDocs = (app.owners || []).length;
     const attachedDocs = (app.owners || []).filter(u => u.attachedDoc && u.attachedDoc.dataUrl).length;
 
-    // Son revizyon mesajını bul (varsa)
+    // Revizyon ve İletişim Mesajları (Tüm mesaj geçmişi)
     let revisionMsgHtml = "";
-    if (isRevision && app.messages && app.messages.length > 0) {
-      const staffMsgs = app.messages.filter(m => m.senderRole === "staff");
-      const lastStaffMsg = staffMsgs.length > 0 ? staffMsgs[staffMsgs.length - 1] : app.messages[app.messages.length - 1];
+    if (app.messages && app.messages.length > 0 && (isRevision || app.messages.some(m => m.senderRole === "staff"))) {
+      const msgs = app.messages;
+      const staffCount = msgs.filter(m => m.senderRole === "staff").length;
       revisionMsgHtml = `
         <div style="background:#fef2f2; border:1.5px solid #fecaca; border-radius:10px; padding:12px 16px; margin:12px 0 6px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <strong style="color:#b91c1c; font-size:12.5px; display:flex; align-items:center; gap:6px;">
-              <span>⚠️ Belediye Yetkilisinin Revizyon Talebi:</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+            <strong style="color:#b91c1c; font-size:13px; display:flex; align-items:center; gap:6px;">
+              <span>⚠️ Belediye Yetkilisinin Revizyon Talepleri (${staffCount} Talep, Toplam ${msgs.length} Mesaj):</span>
             </strong>
-            <span style="font-size:11px; color:#991b1b; font-weight:600;">${escapeHtml(lastStaffMsg.time || '')}</span>
+            <button type="button" class="btn-action-sm" onclick="openRevisionChatModal('${app.id}')" style="background:#b91c1c; color:#fff; border:none; padding:5px 12px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:700; box-shadow:0 2px 6px rgba(185,28,28,0.25);">
+              💬 Mesajlaşma Masasını Aç / Cevap Yaz
+            </button>
           </div>
-          <div style="font-size:13px; color:#7f1d1d; line-height:1.45;">
-            "${escapeHtml(lastStaffMsg.text)}"
+          <div style="display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto; padding-right:4px;">
+            ${msgs.map(m => `
+              <div style="background:#ffffff; border:1px solid ${m.senderRole === 'staff' ? '#fca5a5' : '#bfdbfe'}; border-left:4px solid ${m.senderRole === 'staff' ? '#dc2626' : '#2563eb'}; border-radius:6px; padding:8px 12px; font-size:12.5px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; color:${m.senderRole === 'staff' ? '#991b1b' : '#1e40af'}; font-weight:700; margin-bottom:3px;">
+                  <span>${m.senderRole === 'staff' ? '🏛️ Belediye Yetkilisi: ' : '🏗️ '}${escapeHtml(m.sender)}</span>
+                  <span style="font-size:11px; color:#64748b; font-weight:500;">${escapeHtml(m.time || '')}</span>
+                </div>
+                <div style="color:#0f172a; line-height:1.45;">${escapeHtml(m.text)}</div>
+              </div>
+            `).join('')}
           </div>
         </div>
       `;
@@ -2661,6 +2686,8 @@ function saveContractorApplicationDraft(stayOnForm = true) {
 
   let activeApp = getContractorActiveApp();
 
+  const wasRevision = (activeApp && (activeApp.status === "revizyon" || activeApp.isRevisionDraft || activeApp.isRevised || activeApp.id === activeContractorEditingAppId));
+
   if (!activeApp) {
     const appNo = `YB-TASLAK-${Date.now().toString().slice(-4)}`;
     activeApp = {
@@ -2712,9 +2739,16 @@ function saveContractorApplicationDraft(stayOnForm = true) {
     activeContractorEditingAppId = activeApp.id;
     safeSetLocalStorage("yb_active_editing_app_id", activeApp.id);
   } else {
-    activeApp.status = "Taslak";
-    activeApp.statusText = "Taslak (Yarım Kaldı)";
-    activeApp.isDraft = true;
+    if (wasRevision || activeApp.status === "revizyon" || activeApp.isRevisionDraft) {
+      activeApp.status = "revizyon";
+      activeApp.statusText = "Revizyon Hazırlanıyor (Taslak Düzenleniyor)";
+      activeApp.isRevisionDraft = true;
+      activeApp.isDraft = true;
+    } else {
+      activeApp.status = "Taslak";
+      activeApp.statusText = "Taslak (Yarım Kaldı)";
+      activeApp.isDraft = true;
+    }
     activeApp.lastUpdated = Date.now();
     syncFormToAppObject(activeApp);
   }
@@ -2735,35 +2769,68 @@ function saveContractorApplicationDraft(stayOnForm = true) {
   if (banner) {
     banner.style.display = "block";
     const nowTimeStr = new Date().toLocaleTimeString("tr-TR");
-    banner.innerHTML = `
-      <div style="background:#fefce8; border:2px solid #eab308; border-radius:12px; padding:14px 20px; box-shadow:0 4px 15px rgba(234,179,8,0.12); margin-bottom:18px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <span style="font-size:24px;">💾</span>
-            <div>
-              <strong style="color:#854d0e; font-size:15px;">Taslak Başvuru Kaydedildi &bull; ${escapeHtml(activeApp.appNo)}</strong>
-              <div style="font-size:12.5px; color:#a16207;">Son Kayıt: <strong>${nowTimeStr}</strong> &bull; Bilgileriniz tarayıcınıza güvenle saklandı. Formu doldurmaya kaldığınız yerden devam edebilirsiniz.</div>
+    if (activeApp.status === "revizyon" || activeApp.isRevisionDraft) {
+      banner.innerHTML = `
+        <div style="background:#fff7ed; border:2px solid #ea580c; border-radius:12px; padding:16px 20px; box-shadow:0 4px 15px rgba(234,88,12,0.15); margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-size:26px;">🔄</span>
+              <div>
+                <strong style="color:#c2410c; font-size:15.5px;">Revizyon Taslağı Kaydedildi &bull; ${escapeHtml(activeApp.appNo)}</strong>
+                <div style="font-size:12.5px; color:#9a3412; margin-top:2px;">
+                  Son Kayıt: <strong>${nowTimeStr}</strong> &bull; Belediye yetkilisinin talep ettiği düzeltmeler taslak olarak saklandı. 
+                  İşleminiz bittiğinde aşağıdaki butonla doğrudan belediyeye geri gönderebilirsiniz.
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <button type="button" class="btn-action-sm" onclick="saveContractorApplicationDraft(true)" style="background:#ea580c; color:#fff; font-weight:800; border:none; padding:7px 14px; border-radius:8px; cursor:pointer;">
+                💾 Tekrar Kaydet
+              </button>
+              <button type="button" class="btn-action-sm" onclick="handleContractorSubmit(event)" style="background:#15803d; color:#fff; font-weight:800; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; box-shadow:0 3px 8px rgba(21,128,61,0.3);">
+                🚀 Revizeyi Belediyeye Gönder
+              </button>
             </div>
           </div>
-          <div style="display:flex; gap:8px;">
-            <button type="button" class="btn-action-sm" onclick="saveContractorApplicationDraft(true)" style="background:#f59e0b; color:#fff; font-weight:800; border:none; padding:7px 14px; border-radius:8px; cursor:pointer;">
-              💾 Tekrar Kaydet
-            </button>
-            <button type="button" class="btn-action-sm" onclick="switchContractorPortalTab('drafts')" style="background:#fff; color:#854d0e; border:1.5px solid #ca8a04; font-weight:700; padding:6px 14px; border-radius:8px; cursor:pointer;">
-              📂 Taslaklarıma Git
-            </button>
+        </div>
+      `;
+    } else {
+      banner.innerHTML = `
+        <div style="background:#fefce8; border:2px solid #eab308; border-radius:12px; padding:14px 20px; box-shadow:0 4px 15px rgba(234,179,8,0.12); margin-bottom:18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:24px;">💾</span>
+              <div>
+                <strong style="color:#854d0e; font-size:15px;">Taslak Başvuru Kaydedildi &bull; ${escapeHtml(activeApp.appNo)}</strong>
+                <div style="font-size:12.5px; color:#a16207;">Son Kayıt: <strong>${nowTimeStr}</strong> &bull; Bilgileriniz tarayıcınıza güvenle saklandı. Formu doldurmaya kaldığınız yerden devam edebilirsiniz.</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="btn-action-sm" onclick="saveContractorApplicationDraft(true)" style="background:#f59e0b; color:#fff; font-weight:800; border:none; padding:7px 14px; border-radius:8px; cursor:pointer;">
+                💾 Tekrar Kaydet
+              </button>
+              <button type="button" class="btn-action-sm" onclick="switchContractorPortalTab('drafts')" style="background:#fff; color:#854d0e; border:1.5px solid #ca8a04; font-weight:700; padding:6px 14px; border-radius:8px; cursor:pointer;">
+                📂 Taslaklarıma Git
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    `;
+      `;
+    }
   }
 
   const btnForm = document.getElementById("btn-c-tab-form");
   if (btnForm) {
-    btnForm.innerHTML = "📝 Başvuru Formu (Taslak Düzenleniyor)";
+    btnForm.innerHTML = (activeApp.status === "revizyon" || activeApp.isRevisionDraft)
+      ? "🔄 Başvuru Formu (Revizyon Düzenleniyor)"
+      : "📝 Başvuru Formu (Taslak Düzenleniyor)";
   }
 
-  showToast(`💾 "${activeApp.appNo}" taslak olarak kaydedildi. Kaldığınız yerden formu doldurmaya devam edebilirsiniz.`, "success");
+  if (activeApp.status === "revizyon" || activeApp.isRevisionDraft) {
+    showToast(`🔄 "${activeApp.appNo}" revizyon taslağı kaydedildi. Düzeltmelerinizi bitirdiğinizde belediyeye gönderebilirsiniz.`, "warning");
+  } else {
+    showToast(`💾 "${activeApp.appNo}" taslak olarak kaydedildi. Kaldığınız yerden formu doldurmaya devam edebilirsiniz.`, "success");
+  }
 
   // stayOnForm true ise kullanıcı sayfada kalır, false ise sekme değiştirir
   if (!stayOnForm) {
@@ -2879,9 +2946,25 @@ function startEditingRevision(appId) {
             </button>
           </div>
         </div>
-        ${lastStaffMsg ? `
-          <div style="background:#fff; border:1.5px solid #fecaca; border-radius:8px; padding:10px 14px; margin:8px 0; font-size:13px; color:#7f1d1d;">
-            <strong>Personel Revizyon Notu:</strong> "${escapeHtml(lastStaffMsg.text)}" <span style="font-size:11px; color:#991b1b; margin-left:6px;">(${escapeHtml(lastStaffMsg.time || '')})</span>
+        ${staffMsgs.length > 0 ? `
+          <div style="background:#fff; border:1.5px solid #fecaca; border-radius:8px; padding:12px 14px; margin:10px 0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+              <strong style="color:#991b1b; font-size:13px;">📋 Belediye Yetkilisinin Revizyon Talepleri (${staffMsgs.length} Not):</strong>
+              <button type="button" class="btn-action-sm" onclick="openRevisionChatModal('${app.id}')" style="background:#dc2626; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-size:11.5px; cursor:pointer; font-weight:700;">
+                💬 Canlı Mesajlaşmayı Aç / Cevap Yaz
+              </button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px; max-height:160px; overflow-y:auto; padding-right:4px;">
+              ${staffMsgs.map(m => `
+                <div style="background:#fef2f2; border-left:3.5px solid #dc2626; border-radius:4px; padding:7px 10px; font-size:12.5px; color:#7f1d1d;">
+                  <div style="font-weight:700; display:flex; justify-content:space-between; color:#991b1b; margin-bottom:2px;">
+                    <span>🏛️ ${escapeHtml(m.sender)}</span>
+                    <span style="font-size:10.5px; color:#64748b; font-weight:500;">${escapeHtml(m.time || '')}</span>
+                  </div>
+                  <div style="color:#0f172a; line-height:1.4;">"${escapeHtml(m.text)}"</div>
+                </div>
+              `).join('')}
+            </div>
           </div>
         ` : ''}
         <p style="font-size:12.5px; color:#9a3412; margin:6px 0 0;">
@@ -3091,25 +3174,53 @@ function renderRegisteredContractorsList() {
 // =========================================================================
 // REVİZYON & ÇİFT TARAFLI CHAT / MESAJLAŞMA SİSTEMİ
 // =========================================================================
-function openRevisionChatModal() {
-  if (!selectedAppId) return;
-  const app = applicationsList.find(a => a.id === selectedAppId);
+function openRevisionChatModal(appId = null) {
+  let targetId = appId || activeChatAppId || selectedAppId || activeContractorEditingAppId;
+  if (!targetId) {
+    const activeApp = getContractorActiveApp();
+    if (activeApp) targetId = activeApp.id;
+  }
+  if (!targetId) return;
+
+  const app = applicationsList.find(a => a.id === targetId || a.appNo === targetId);
   if (!app) return;
 
-  activeChatAppId = selectedAppId;
+  activeChatAppId = app.id;
   if (!app.messages) app.messages = [];
 
-  document.getElementById("chat-modal-app-no").innerText = app.appNo;
-  document.getElementById("chat-modal-company-name").innerText = app.company.name;
-  document.getElementById("chat-modal-email").innerText = app.submittedByEmail || app.company.repEmail || "-";
+  const appNoEl = document.getElementById("chat-modal-app-no");
+  const compEl = document.getElementById("chat-modal-company-name");
+  const emailEl = document.getElementById("chat-modal-email");
+  const inputEl = document.getElementById("chat-modal-input-text");
+
+  if (appNoEl) appNoEl.innerText = app.appNo || "-";
+  if (compEl) compEl.innerText = (app.company && app.company.name) || (app.contractor && app.contractor.companyName) || "Müteahhit Firma";
+  if (emailEl) emailEl.innerText = app.submittedByEmail || (app.company && app.company.repEmail) || "-";
+
+  // Müteahhit mi yetkili mi oturum açmış? Buton ve etiketleri uyarla
+  const isContractor = !!activeContractorUser && (!currentStaff || currentStaff.id === 'contractor');
+  const labelEl = document.querySelector('label[for="chat-modal-input-text"]');
+  const sendBtn = document.querySelector('#revision-chat-modal .btn-submit-big');
+
+  if (isContractor) {
+    if (labelEl) labelEl.innerText = "Belediye Yetkilisine Cevabınız / Mesajınız:";
+    if (inputEl) inputEl.placeholder = "Örn: Talep edilen kat irtifak tapusu güncellendi ve sisteme yüklendi, incelemenize sunulmuştur...";
+    if (sendBtn) sendBtn.innerHTML = "✉️ Cevabı Belediye Yetkilisine Gönder";
+  } else {
+    if (labelEl) labelEl.innerText = "Müteahhide İletilecek Revizyon Talebi / Mesajınız:";
+    if (inputEl) inputEl.placeholder = "Örn: 2 nolu Bağımsız Bölüm tapusundaki hisse uyuşmuyor, lütfen güncel kat irtifak tapusunu yükleyip tekrar gönderiniz...";
+    if (sendBtn) sendBtn.innerHTML = "✉️ Revizyon Talebini Gönder ve Dosyayı İşaretle";
+  }
 
   renderChatModalMessages(app.messages);
-  document.getElementById("chat-modal-input-text").value = "";
-  document.getElementById("revision-chat-modal").style.display = "flex";
+  if (inputEl) inputEl.value = "";
+  const modal = document.getElementById("revision-chat-modal");
+  if (modal) modal.style.display = "flex";
 }
 
 function closeRevisionChatModal() {
-  document.getElementById("revision-chat-modal").style.display = "none";
+  const modal = document.getElementById("revision-chat-modal");
+  if (modal) modal.style.display = "none";
 }
 
 function renderChatModalMessages(messages) {
@@ -3119,22 +3230,24 @@ function renderChatModalMessages(messages) {
 
   if (!messages || messages.length === 0) {
     container.innerHTML = `
-      <div style="text-align:center; padding:20px; color:#94a3b8; font-size:12.5px;">
-        Henüz bir revizyon mesajı bulunmuyor. Aşağıdan müteahhide revizyon talebi iletebilirsiniz.
+      <div style="text-align:center; padding:24px; color:#94a3b8; font-size:12.5px;">
+        💬 Henüz bir revizyon mesajı bulunmuyor. Aşağıdaki alandan mesajınızı yazarak iletişimi başlatabilirsiniz.
       </div>
     `;
     return;
   }
 
   messages.forEach(m => {
+    const isStaff = m.senderRole === "staff";
     const bubble = document.createElement("div");
-    bubble.className = `chat-bubble ${m.senderRole === "staff" ? "staff" : "contractor"}`;
+    bubble.className = `chat-bubble ${isStaff ? "staff" : "contractor"}`;
+    bubble.style.cssText = `max-width:85%; margin-bottom:10px; padding:10px 14px; border-radius:10px; ${isStaff ? 'background:#fef2f2; border:1px solid #fecaca; margin-right:auto;' : 'background:#eff6ff; border:1px solid #bfdbfe; margin-left:auto;'}`;
     bubble.innerHTML = `
-      <div class="chat-bubble-author">
-        <span>${escapeHtml(m.sender)}</span>
-        <span class="chat-bubble-time">${escapeHtml(m.time)}</span>
+      <div class="chat-bubble-author" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-weight:700; font-size:11.5px; color:${isStaff ? '#b91c1c' : '#1d4ed8'};">
+        <span>${isStaff ? '🏛️ Belediye Yetkilisi: ' : '🏗️ Müteahhit: '}${escapeHtml(m.sender)}</span>
+        <span class="chat-bubble-time" style="font-size:10.5px; color:#64748b; font-weight:normal;">${escapeHtml(m.time || '')}</span>
       </div>
-      <div>${escapeHtml(m.text)}</div>
+      <div style="color:#0f172a; font-size:13px; line-height:1.45;">${escapeHtml(m.text)}</div>
     `;
     container.appendChild(bubble);
   });
@@ -3149,28 +3262,48 @@ function sendStaffRevisionMessage() {
   const input = document.getElementById("chat-modal-input-text");
   const text = input ? input.value.trim() : "";
   if (!text) {
-    showToast("Lütfen iletmek istediğiniz revizyon notunu yazınız.", "warning");
+    showToast("Lütfen iletmek istediğiniz mesajı yazınız.", "warning");
     return;
   }
 
   if (!app.messages) app.messages = [];
   const nowStr = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }) + " - " + new Date().toLocaleDateString("tr-TR");
 
-  app.messages.push({
-    sender: currentStaff.name,
-    senderRole: "staff",
-    text: text,
-    time: nowStr
-  });
+  const isContractor = !!activeContractorUser && (!currentStaff || currentStaff.id === 'contractor');
+  if (isContractor) {
+    app.messages.push({
+      sender: `${activeContractorUser.companyName} (${activeContractorUser.repName})`,
+      senderRole: "contractor",
+      text: text,
+      time: nowStr
+    });
+    showToast("✅ Cevabınız belediye yetkilisine iletildi!", "success");
+  } else {
+    app.messages.push({
+      sender: (currentStaff && currentStaff.name) ? currentStaff.name : "Kentsel Dönüşüm Yetkilisi",
+      senderRole: "staff",
+      text: text,
+      time: nowStr
+    });
+    app.status = "revizyon";
+    app.statusText = "Revizyon İstendi (Eksik Evrak)";
+    showToast(`✅ Revizyon mesajı "${(app.company && app.company.name) || 'Müteahhit'}" firmasına iletildi!`, "success");
+  }
 
-  app.status = "revizyon";
-  saveDataToStorage();
-  updateHeaderCounts();
-  renderApplicationsPool();
-  openApplicationDetail(app.id);
+  app.lastUpdated = Date.now();
+  saveDataToStorage(true);
 
-  showToast(`✅ Revizyon mesajı "${app.company.name}" firmasına iletildi!`, "success");
-  closeRevisionChatModal();
+  if (window.FirebaseSync && typeof window.FirebaseSync.pushApplication === "function") {
+    window.FirebaseSync.pushApplication(app);
+  }
+
+  renderChatModalMessages(app.messages);
+  input.value = "";
+
+  if (typeof updateHeaderCounts === "function") updateHeaderCounts();
+  if (typeof renderApplicationsPool === "function") renderApplicationsPool();
+  if (typeof renderContractorMyApps === "function") renderContractorMyApps();
+  if (typeof checkContractorRevisions === "function") checkContractorRevisions();
 }
 
 function checkContractorRevisions() {
